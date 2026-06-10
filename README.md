@@ -369,12 +369,6 @@ por el token real:
 KAGGLE_API_TOKEN="KGAT_TU_TOKEN_REAL"
 ```
 
-Antes de subir a GitHub, debe volver a quedar:
-
-```bash
-KAGGLE_API_TOKEN="INGRESE_AQUI_SU_TOKEN_KAGGLE"
-```
-
 ### 11.4 Prueba rápida
 
 ```bash
@@ -597,38 +591,9 @@ Registrar resultados en:
 ```text
 experiments/results/
 ```
-
 ---
 
-## 19. Archivos que no deben subirse a GitHub
-
-La configuración `.gitignore` excluye:
-
-```text
-.venv/
-.env
-*kaggle*.json
-*access_token*.txt
-training/data/
-training/outputs/
-backend/app/models/weights/*.pt
-backend/app/models/weights/*.pth
-backend/app/models/weights/*.onnx
-*.pt
-*.pth
-*.onnx
-*.mp4
-*.avi
-*.mov
-*.jpg
-*.jpeg
-*.png
-*.zip
-```
-
----
-
-## 20. Flujo final recomendado
+## 19. Flujo final recomendado
 
 ```text
 1. Subir código limpio a GitHub.
@@ -643,7 +608,7 @@ backend/app/models/weights/*.onnx
 
 ---
 
-## 21. Estado del proyecto
+## 20. Estado del proyecto
 
 ```text
 EDA                                      OK
@@ -662,7 +627,7 @@ Demo local en /faceproguard              OK
 
 ---
 
-## 22. Conclusión
+## 21. Conclusión
 
 FaceGuard implementa un flujo completo de detección de vida anti-spoofing: preparación de datasets, EDA, entrenamiento de cuatro arquitecturas, comparación biométrica, generación de gráficos, integración de checkpoints `.pt` y prueba desde un cliente web local.
 
