@@ -1,0 +1,16 @@
+model:
+  name: cdcn
+  input_size: 224
+  num_classes: 1
+training:
+  epochs: 30
+  batch_size: 32
+  optimizer: adamw
+  learning_rate: 0.0001
+  weight_decay: 0.00001
+loss:
+  name: binary_focal_loss
+data:
+  train_csv: training/data/metadata/train.csv
+  val_csv: training/data/metadata/val.csv
+  test_csv: training/data/metadata/test.csv

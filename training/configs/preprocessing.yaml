@@ -1,0 +1,3 @@
+resize: 224
+normalization: imagenet
+jpeg_quality: 82

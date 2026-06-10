@@ -1,0 +1,5 @@
+MODEL_NAMES = {"cnn_baseline", "efficientnet_b0", "mobilenetv3_small", "cdcn"}
+DECISION_ACCESS_GRANTED = "ACCESS_GRANTED"
+DECISION_ACCESS_DENIED = "ACCESS_DENIED"
+LABEL_REAL = "REAL"
+LABEL_SPOOF = "SPOOF"

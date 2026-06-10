@@ -1,0 +1,3 @@
+input_size: 224
+label_live: 1
+label_spoof: 0

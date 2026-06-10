@@ -1,0 +1,12 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=local
+      - LIVENESS_DEFAULT_MODEL=efficientnet_b0
+      - LIVENESS_THRESHOLD=0.70
+      - IDENTITY_THRESHOLD=0.65
+    volumes:
+      - ./backend/app/models/weights:/app/app/models/weights
