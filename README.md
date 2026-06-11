@@ -340,7 +340,7 @@ cdcn_rgb_loss_curve.png
 ### 11.1 Clonar proyecto
 
 ```bash
-!git clone https://github.com/TU_USUARIO/faceguard-project.git
+!git clone https://github.com/manadevelop/faceguard-project.git
 %cd faceguard-project
 ```
 
