@@ -222,14 +222,36 @@ enrollment.registerBtn.addEventListener('click', async () => {
     return;
   }
 
-  setLoading(enrollment.registerBtn, true, 'Registrando...');
+  setLoading(enrollment.registerBtn, true, 'Validando vida...');
 
   try {
     const blob = await captureFaceCropBlob(enrollment.video, enrollment.canvas);
     stopAfterCapture(enrollment);
-    setResult(enrollment.result, 'Enviando identidad al backend...');
-    const data = await enrollIdentity(blob, personId);
-    setResult(enrollment.result, data);
+
+    setResult(enrollment.result, 'Validando liveness antes del enrolamiento...');
+
+    const livenessData = await postImage(blob, enrollment.model.value, null);
+
+    if (!livenessData.access_granted || livenessData.decision !== 'ACCESS_GRANTED') {
+      setResult(enrollment.result, {
+        enrolled: false,
+        message: 'Enrolamiento rechazado. La validación de vida no fue aprobada.',
+        liveness_validation: livenessData
+      });
+      return;
+    }
+
+    setLoading(enrollment.registerBtn, true, 'Registrando identidad...');
+    setResult(enrollment.result, 'Liveness aprobado. Registrando identidad...');
+
+    const enrollData = await enrollIdentity(blob, personId);
+
+    setResult(enrollment.result, {
+      enrolled: true,
+      message: 'Identidad registrada correctamente después de validar liveness.',
+      liveness_validation: livenessData,
+      enrollment: enrollData
+    });
   } catch (error) {
     setResult(enrollment.result, `Error al registrar identidad: ${error.message}`);
   } finally {
