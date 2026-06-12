@@ -4,229 +4,176 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FaceGuard</title>
-  <link rel="stylesheet" href="/frontend/src/styles/global.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/frontend/src/styles/global.css?v=md3-flow-responsive-20260612" />
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="navigation-rail" aria-label="Accesos rápidos">
-      <button class="rail-item active" data-target="verifySection" title="Verificar rostro">⌁</button>
-      <button class="rail-item" data-target="enrollSection" title="Registrar identidad">＋</button>
-      <button class="rail-item" data-target="experimentsSection" title="Pruebas y escenarios">▦</button>
-      <button class="rail-item" data-target="trainingSection" title="Entrenamiento">◈</button>
-      <button class="rail-item" data-target="docsSection" title="Documentación">?</button>
-    </aside>
+  <div id="drawerScrim" class="drawer-scrim" aria-hidden="true"></div>
 
-    <aside class="side-drawer" aria-label="Menú lateral">
+  <header class="mobile-topbar">
+    <button id="openDrawerBtn" class="icon-button" type="button" aria-label="Abrir menú">☰</button>
+    <div class="mobile-brand">
+      <strong>FaceGuard</strong>
+      <span>Liveness + Identidad</span>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Navegación principal">
       <div class="brand-block">
-        <div class="brand-logo">FG</div>
+        <div class="brand-icon">FG</div>
         <div>
-          <p class="brand-title">FaceGuard</p>
-          <p class="brand-subtitle">Liveness + identidad</p>
+          <div class="brand-title">FaceGuard</div>
+          <div class="brand-subtitle">Liveness + Identidad</div>
         </div>
       </div>
 
-      <nav class="drawer-nav">
-        <button class="drawer-link active" data-target="verifySection">
-          <span class="nav-icon">⌁</span>
-          <span>
-            <strong>Verificación</strong>
-            <small>Imagen y video/frames</small>
-          </span>
+      <nav class="nav-list">
+        <button class="nav-item active" data-target="livenessView" type="button">
+          <span class="nav-icon">↝</span>
+          <span>Verificar Liveness</span>
         </button>
-        <button class="drawer-link" data-target="enrollSection">
+        <button class="nav-item" data-target="enrollmentView" type="button">
           <span class="nav-icon">＋</span>
-          <span>
-            <strong>Enrolamiento</strong>
-            <small>Registrar identidad</small>
-          </span>
-        </button>
-        <button class="drawer-link" data-target="experimentsSection">
-          <span class="nav-icon">▦</span>
-          <span>
-            <strong>Pruebas</strong>
-            <small>Live, print, screen, replay</small>
-          </span>
-        </button>
-        <button class="drawer-link" data-target="trainingSection">
-          <span class="nav-icon">◈</span>
-          <span>
-            <strong>Entrenamiento</strong>
-            <small>4 arquitecturas</small>
-          </span>
-        </button>
-        <button class="drawer-link" data-target="docsSection">
-          <span class="nav-icon">?</span>
-          <span>
-            <strong>Documentación</strong>
-            <small>Paper y demo</small>
-          </span>
+          <span>Enrolamiento</span>
         </button>
       </nav>
-
-      <div class="drawer-footer">
-        <span class="status-dot"></span>
-        <span>Contexto: <strong>/faceproguard</strong></span>
-      </div>
     </aside>
 
-    <main class="content">
-      <header class="top-app-bar">
-        <div>
-          <span class="eyebrow">Sistema web local</span>
+    <main class="main-content">
+      <section class="hero-card">
+        <div class="hero-copy">
+          <span class="assist-chip">Sistema web local</span>
           <h1>FaceGuard</h1>
-          <p>Sistema de detección de vida anti-spoofing y autenticación facial.</p>
+          <p>Sistema de detección de vida anti-spoofing y enrolamiento seguro.</p>
         </div>
-        <div class="top-actions">
-          <span id="cameraStatus" class="assist-chip">Cámara detenida</span>
-          <span class="assist-chip">FastAPI local</span>
+        <div class="status-chips" aria-label="Estado del sistema">
+          <span id="cameraStatusChip" class="status-chip status-muted">Cámara detenida</span>
+          <span class="status-chip status-muted">FastAPI local</span>
         </div>
-      </header>
+      </section>
 
-      <section id="verifySection" class="surface-section active-section">
-        <div class="section-heading">
-          <div>
-            <h2>Verificación facial</h2>
-            <p>Captura una fotografía o un conjunto de frames desde la webcam. El frontend recorta el rostro y envía solo el crop al backend.</p>
+      <section id="livenessView" class="view active-view" aria-label="Verificar liveness">
+        <div class="filter-row one-field">
+          <div class="field-control md-card compact-field">
+            <label for="livenessModelSelect">Modelo anti-spoofing <span class="help-dot">?</span></label>
+            <select id="livenessModelSelect">
+              <option value="cnn_baseline">CNN Baseline</option>
+              <option value="efficientnet_b0" selected>EfficientNet-B0</option>
+              <option value="mobilenetv3_small">MobileNetV3-Small</option>
+              <option value="cdcn">CDCN</option>
+            </select>
           </div>
         </div>
 
-        <section class="control-card">
-          <div class="controls-grid">
-            <label class="field">
-              <span class="label-row">
-                Modelo anti-spoofing
-                <span class="help" title="Arquitectura que usará el backend para calcular el score REAL/SPOOF. CDCN es el modelo especializado para anti-spoofing.">?</span>
-              </span>
-              <select id="modelSelect">
-                <option value="cnn_baseline">CNN baseline</option>
-                <option value="efficientnet_b0" selected>EfficientNet-B0</option>
-                <option value="mobilenetv3_small">MobileNetV3-Small</option>
-                <option value="cdcn">CDCN</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span class="label-row">
-                Person ID opcional
-                <span class="help" title="Identificador del usuario registrado. Se usa para comparar identidad después de aprobar liveness.">?</span>
-              </span>
-              <input id="personId" placeholder="usuario_001" />
-            </label>
-          </div>
-        </section>
-
-        <div class="workspace-grid">
-          <section class="md-card camera-card">
-            <div class="card-header">
-              <div>
-                <h3>Cámara en vivo</h3>
-                <p>Vista completa de la webcam. No se envía completa al backend.</p>
-              </div>
-              <span class="help" title="Aquí se muestra el frame completo usado únicamente en el navegador para generar el recorte facial.">?</span>
-            </div>
-            <div class="video-wrap">
-              <video id="video" autoplay playsinline></video>
-              <canvas id="overlay"></canvas>
-            </div>
-            <div class="action-row">
-              <button id="startBtn" class="filled-button">Iniciar cámara</button>
-              <button id="stopBtn" class="tonal-button" disabled>Detener cámara</button>
-            </div>
-          </section>
-
-          <aside class="inspector-column">
-            <section class="md-card preview-card">
-              <div class="card-header compact">
+        <div class="workflow-grid">
+          <div class="left-flow">
+            <section id="livenessCaptureCard" class="md-card capture-card" data-state="idle">
+              <div class="card-title-row">
                 <div>
-                  <h3>Crop facial enviado</h3>
-                  <p>Rostro normalizado a 224x224.</p>
+                  <h2 id="livenessCaptureTitle">Cámara en vivo</h2>
+                  <p id="livenessCaptureSubtitle">Vista completa de la webcam. No se envía completa al backend.</p>
                 </div>
-                <span class="help" title="Este es el recorte comprimido que se envía al backend. Sirve para validar que no estás mandando una imagen de 5 a 10 MB.">?</span>
+                <span class="help-dot">?</span>
               </div>
-              <canvas id="cropCanvas" width="224" height="224"></canvas>
+
+              <div class="capture-stage">
+                <video id="livenessVideo" class="camera-video" autoplay playsinline muted></video>
+                <canvas id="livenessCropCanvas" class="crop-canvas" width="224" height="224"></canvas>
+                <div id="livenessIdleBox" class="idle-box">Presiona “Iniciar cámara” para comenzar.</div>
+              </div>
+
+              <div class="camera-actions">
+                <button id="livenessStartBtn" class="md-button filled" type="button">Iniciar cámara</button>
+                <button id="livenessStopBtn" class="md-button tonal hidden" type="button">Detener cámara</button>
+              </div>
             </section>
 
+            <div id="livenessVerifyActions" class="primary-actions two-actions hidden">
+              <button id="verifyImageBtn" class="md-button action-button" type="button">Verificar Liveness en Imagen</button>
+              <button id="verifyVideoBtn" class="md-button action-button" type="button">Verificar Liveness en Video</button>
+            </div>
+          </div>
+
+          <aside class="right-flow">
             <section class="md-card result-card">
-              <div class="card-header compact">
+              <div class="card-title-row">
                 <div>
-                  <h3>Resultado del backend</h3>
-                  <p>Respuesta JSON de FastAPI.</p>
+                  <h2>Resultado del Modelo IA</h2>
+                  <p>Respuesta JSON generada por la API a partir de la inferencia realizada con el modelo entrenado.</p>
                 </div>
-                <span class="help" title="Contiene decisión final, score de liveness, modelo usado y resultado de identidad.">?</span>
+                <span class="help-dot">?</span>
               </div>
-              <pre id="result">Esperando acción...</pre>
+              <pre id="livenessResult">Resultado pendiente...</pre>
             </section>
           </aside>
         </div>
-
-        <section class="actions-panel">
-          <button id="captureBtn" class="filled-button">Verificar imagen</button>
-          <button id="realtimeBtn" class="filled-button">Verificar video/frames</button>
-          <button id="enrollBtn" class="outlined-button">Registrar identidad</button>
-        </section>
       </section>
 
-      <section id="enrollSection" class="surface-section">
-        <div class="section-heading">
-          <div>
-            <h2>Enrolamiento de identidad</h2>
-            <p>Registra un usuario usando el Person ID. Antes de registrar, el sistema puede validar liveness para evitar enrolar un spoof.</p>
+      <section id="enrollmentView" class="view" aria-label="Enrolamiento">
+        <div class="filter-row two-fields">
+          <div class="field-control md-card compact-field">
+            <label for="enrollModelSelect">Modelo anti-spoofing <span class="help-dot">?</span></label>
+            <select id="enrollModelSelect">
+              <option value="cnn_baseline">CNN Baseline</option>
+              <option value="efficientnet_b0" selected>EfficientNet-B0</option>
+              <option value="mobilenetv3_small">MobileNetV3-Small</option>
+              <option value="cdcn">CDCN</option>
+            </select>
+          </div>
+          <div class="field-control md-card compact-field">
+            <label for="enrollPersonId">Person ID <span class="help-dot">?</span></label>
+            <input id="enrollPersonId" value="usuario_001" placeholder="usuario_001" />
           </div>
         </div>
-        <div class="info-grid">
-          <article class="info-card"><strong>1. Iniciar cámara</strong><span>Activa la webcam desde la sección Verificación.</span></article>
-          <article class="info-card"><strong>2. Ingresar Person ID</strong><span>Ejemplo: marco, usuario_001, alumno_01.</span></article>
-          <article class="info-card"><strong>3. Registrar identidad</strong><span>Se guarda el embedding facial para verificación posterior.</span></article>
-        </div>
-      </section>
 
-      <section id="experimentsSection" class="surface-section">
-        <div class="section-heading">
-          <div>
-            <h2>Pruebas experimentales</h2>
-            <p>Escenarios que debes documentar para el artículo y la exposición.</p>
-          </div>
-        </div>
-        <div class="scenario-grid">
-          <article class="scenario-card live"><span>LIVE</span><strong>Rostro real</strong><small>Usuario frente a webcam.</small></article>
-          <article class="scenario-card attack"><span>SPOOF</span><strong>Foto impresa</strong><small>Ataque con papel.</small></article>
-          <article class="scenario-card attack"><span>SPOOF</span><strong>Pantalla celular</strong><small>Imagen mostrada en otro dispositivo.</small></article>
-          <article class="scenario-card attack"><span>SPOOF</span><strong>Replay video</strong><small>Video reproducido frente a cámara.</small></article>
-          <article class="scenario-card hard"><span>CASO DIFÍCIL</span><strong>Baja iluminación</strong><small>Validar robustez del sistema.</small></article>
-          <article class="scenario-card hard"><span>CALIDAD</span><strong>Rostro parcial</strong><small>Debe rechazar o advertir.</small></article>
-        </div>
-      </section>
+        <div class="workflow-grid">
+          <div class="left-flow">
+            <section id="enrollCaptureCard" class="md-card capture-card" data-state="idle">
+              <div class="card-title-row">
+                <div>
+                  <h2 id="enrollCaptureTitle">Cámara en vivo</h2>
+                  <p id="enrollCaptureSubtitle">Vista completa de la webcam. No se envía completa al backend.</p>
+                </div>
+                <span class="help-dot">?</span>
+              </div>
 
-      <section id="trainingSection" class="surface-section">
-        <div class="section-heading">
-          <div>
-            <h2>Entrenamiento y modelos</h2>
-            <p>Los 4 modelos obligatorios se entrenan en Google Colab y luego se exportan al backend.</p>
-          </div>
-        </div>
-        <div class="model-grid">
-          <article class="model-card"><span>Baseline</span><strong>CNN baseline</strong><small>Modelo propio desde cero.</small></article>
-          <article class="model-card"><span>Transfer learning</span><strong>EfficientNet-B0</strong><small>Modelo general fuerte.</small></article>
-          <article class="model-card"><span>Producción</span><strong>MobileNetV3-Small</strong><small>Modelo liviano para inferencia rápida.</small></article>
-          <article class="model-card emphasized"><span>Especializado</span><strong>CDCN</strong><small>Modelo clave para anti-spoofing.</small></article>
-        </div>
-      </section>
+              <div class="capture-stage">
+                <video id="enrollVideo" class="camera-video" autoplay playsinline muted></video>
+                <canvas id="enrollCropCanvas" class="crop-canvas" width="224" height="224"></canvas>
+                <div id="enrollIdleBox" class="idle-box">Presiona “Iniciar cámara” para comenzar.</div>
+              </div>
 
-      <section id="docsSection" class="surface-section">
-        <div class="section-heading">
-          <div>
-            <h2>Documentación del proyecto</h2>
-            <p>Secciones recomendadas para README, artículo IEEE y presentación.</p>
+              <div class="camera-actions">
+                <button id="enrollStartBtn" class="md-button filled" type="button">Iniciar cámara</button>
+                <button id="enrollStopBtn" class="md-button tonal hidden" type="button">Detener cámara</button>
+              </div>
+            </section>
+
+            <div id="enrollActionGroup" class="primary-actions one-action hidden">
+              <button id="registerIdentityBtn" class="md-button action-button" type="button">Registrar Identidad</button>
+            </div>
           </div>
-        </div>
-        <div class="doc-list">
-          <div><strong>EDA y preparación de datos</strong><span>Limpieza, etiquetado, normalización, split por sujeto y control de calidad.</span></div>
-          <div><strong>Comparación de arquitecturas</strong><span>Accuracy, F1, AUC, APCER, BPCER, ACER, latencia y tamaño del modelo.</span></div>
-          <div><strong>Demo en tiempo real</strong><span>Captura de frames, crop en frontend, inferencia en backend y decisión final.</span></div>
+
+          <aside class="right-flow">
+            <section class="md-card result-card">
+              <div class="card-title-row">
+                <div>
+                  <h2>Resultado del backend</h2>
+                  <p>Respuesta JSON de FastAPI.</p>
+                </div>
+                <span class="help-dot">?</span>
+              </div>
+              <pre id="enrollResult">Resultado pendiente...</pre>
+            </section>
+          </aside>
         </div>
       </section>
     </main>
   </div>
-  <script type="module" src="/frontend/src/main.js"></script>
+
+  <script type="module" src="/frontend/src/main.js?v=md3-flow-responsive-20260612"></script>
 </body>
 </html>

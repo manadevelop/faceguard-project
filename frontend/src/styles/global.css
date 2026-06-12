@@ -1,342 +1,1261 @@
 :root {
-  color-scheme: light;
-  --md-primary: #6750a4;
+  --md-primary: #6f4bb3;
+  --md-primary-strong: #5c3ca0;
   --md-on-primary: #ffffff;
-  --md-primary-container: #eaddff;
-  --md-on-primary-container: #21005d;
-  --md-secondary-container: #e8def8;
-  --md-on-secondary-container: #1d192b;
-  --md-tertiary-container: #ffd8e4;
-  --md-surface: #fffbfe;
-  --md-surface-container-low: #f7f2fa;
-  --md-surface-container: #f3edf7;
-  --md-surface-container-high: #ece6f0;
-  --md-outline: #79747e;
-  --md-outline-variant: #cac4d0;
-  --md-on-surface: #1d1b20;
-  --md-on-surface-variant: #49454f;
-  --md-success-container: #d7f8df;
-  --md-error-container: #ffdad6;
-  --md-warning-container: #ffe8b3;
-  --radius-xl: 28px;
-  --radius-lg: 20px;
-  --radius-md: 14px;
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 8%), 0 2px 6px rgb(0 0 0 / 5%);
-  --shadow-2: 0 8px 24px rgb(0 0 0 / 10%);
-  font-family: Inter, Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: var(--md-on-surface);
-  background: var(--md-surface);
+  --md-primary-container: #eadcff;
+  --md-on-primary-container: #24113f;
+  --md-secondary-container: #e8dded;
+  --md-surface: #fff8ff;
+  --md-surface-container: #f7eff9;
+  --md-surface-container-high: #f0e6f2;
+  --md-outline: #cfc2d2;
+  --md-outline-strong: #a985c6;
+  --md-text: #1d1b20;
+  --md-muted: #56505c;
+  --md-success: #d7f8dd;
+  --md-shadow: 0 8px 24px rgba(37, 23, 55, 0.12);
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --sidebar-width: 286px;
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--md-surface-container-low); }
+
+html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--md-text);
+  background: linear-gradient(180deg, #fffaff 0%, #fbf5fd 100%);
+}
+
 button, input, select { font: inherit; }
-button { -webkit-tap-highlight-color: transparent; }
+
+.hidden { display: none !important; }
 
 .app-shell {
-  min-height: 100vh;
   display: grid;
-  grid-template-columns: 72px 280px minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
 }
 
-.navigation-rail {
+.sidebar {
   position: sticky;
   top: 0;
   height: 100vh;
-  background: #fef7ff;
-  border-right: 1px solid var(--md-outline-variant);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 24px 10px;
-}
-
-.rail-item {
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 18px;
-  background: transparent;
-  color: var(--md-on-surface-variant);
-  cursor: pointer;
-  font-size: 20px;
-}
-
-.rail-item.active,
-.rail-item:hover {
-  background: var(--md-primary-container);
-  color: var(--md-on-primary-container);
-}
-
-.side-drawer {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  background: var(--md-surface-container);
-  padding: 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  border-right: 1px solid var(--md-outline-variant);
+  background: #fffcff;
+  border-right: 1px solid var(--md-outline);
+  padding: 28px 18px;
+  z-index: 20;
 }
 
 .brand-block {
   display: flex;
-  gap: 12px;
   align-items: center;
-  padding: 10px;
+  gap: 14px;
+  padding: 12px 8px 32px;
+  border-bottom: 1px solid var(--md-outline);
 }
 
-.brand-logo {
+.brand-icon {
   width: 48px;
   height: 48px;
-  border-radius: 16px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  background: var(--md-primary);
-  color: var(--md-on-primary);
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  border: 1px solid var(--md-outline-strong);
+  font-weight: 900;
 }
 
-.brand-title,
-.brand-subtitle { margin: 0; }
-.brand-title { font-weight: 800; }
-.brand-subtitle { color: var(--md-on-surface-variant); font-size: 13px; }
+.brand-title { font-weight: 900; font-size: 17px; }
+.brand-subtitle { font-size: 14px; color: var(--md-text); }
 
-.drawer-nav {
-  display: grid;
-  gap: 8px;
-}
-
-.drawer-link {
-  border: 0;
-  width: 100%;
-  background: transparent;
-  color: var(--md-on-surface);
-  padding: 12px;
-  border-radius: 999px;
+.nav-list {
   display: flex;
-  gap: 12px;
-  align-items: center;
-  text-align: left;
-  cursor: pointer;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 26px;
 }
 
-.drawer-link.active,
-.drawer-link:hover {
+.nav-item {
+  height: 58px;
+  border: 1px solid var(--md-outline-strong);
   background: var(--md-secondary-container);
-  color: var(--md-on-secondary-container);
-}
-
-.drawer-link strong,
-.drawer-link small {
-  display: block;
-}
-.drawer-link small { color: var(--md-on-surface-variant); margin-top: 2px; }
-.nav-icon { width: 28px; text-align: center; font-size: 18px; }
-
-.drawer-footer {
-  margin-top: auto;
+  border-radius: 10px;
   display: flex;
-  gap: 8px;
   align-items: center;
-  color: var(--md-on-surface-variant);
-  font-size: 13px;
-  padding: 12px;
-}
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #2e7d32;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #160f1c;
+  transition: background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
-.content {
+.nav-item:hover { transform: translateY(-1px); box-shadow: var(--md-shadow); }
+.nav-item.active { background: var(--md-primary-container); font-weight: 800; }
+.nav-icon { font-weight: 900; }
+
+.main-content {
   min-width: 0;
-  padding: 28px;
-  display: grid;
-  gap: 20px;
+  padding: 28px clamp(22px, 3vw, 42px) 42px;
 }
 
-.top-app-bar {
-  background: linear-gradient(135deg, var(--md-primary-container), #fef7ff 60%);
-  border-radius: var(--radius-xl);
-  padding: 28px;
+.hero-card {
+  min-height: 142px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #efe0ff 0%, #fff9ff 75%);
+  box-shadow: var(--md-shadow);
+  border: 1px solid #eadff0;
+  padding: 28px 36px;
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  box-shadow: var(--shadow-1);
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 24px;
 }
 
-.top-app-bar h1 { margin: 8px 0; font-size: clamp(30px, 4vw, 48px); letter-spacing: -1px; }
-.top-app-bar p { margin: 0; color: var(--md-on-surface-variant); max-width: 760px; }
-.top-actions { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-
-.eyebrow,
-.assist-chip {
+.assist-chip,
+.status-chip {
   display: inline-flex;
   align-items: center;
+  min-height: 28px;
+  padding: 6px 14px;
   border-radius: 999px;
-  font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 800;
 }
-.eyebrow { padding: 6px 12px; background: var(--md-primary); color: var(--md-on-primary); }
-.assist-chip { padding: 8px 12px; background: var(--md-surface-container-high); color: var(--md-on-surface-variant); }
-.assist-chip.running { background: var(--md-success-container); color: #0b3d17; }
 
-.surface-section {
-  display: none;
+.assist-chip { background: var(--md-primary); color: var(--md-on-primary); }
+.hero-card h1 { font-size: clamp(36px, 4vw, 52px); line-height: 1; margin: 18px 0 8px; font-weight: 900; }
+.hero-card p { margin: 0; color: var(--md-muted); font-size: 16px; }
+.status-chips { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.status-muted { background: #eee8f2; color: #4e4655; }
+.status-active { background: var(--md-success); color: #1d6a31; }
+
+.view { display: none; }
+.active-view { display: block; }
+
+.md-card {
   background: var(--md-surface);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-1);
-  padding: 24px;
-}
-.surface-section.active-section { display: block; }
-.section-heading { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-.section-heading h2 { margin: 0 0 6px; font-size: 26px; }
-.section-heading p { margin: 0; color: var(--md-on-surface-variant); max-width: 900px; }
-
-.control-card,
-.md-card,
-.info-card,
-.scenario-card,
-.model-card,
-.doc-list > div {
-  background: var(--md-surface-container-low);
-  border: 1px solid var(--md-outline-variant);
+  border: 1px solid var(--md-outline);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--md-shadow);
 }
 
-.control-card { padding: 18px; margin-bottom: 18px; }
-.controls-grid { display: grid; grid-template-columns: 260px 260px; gap: 16px; }
-.field { display: grid; gap: 8px; font-weight: 700; }
-.label-row,
-.card-header { display: flex; align-items: center; gap: 8px; }
+.filter-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
 
-.help {
+.compact-field {
+  border-radius: 0;
+  box-shadow: none;
+  border-color: transparent;
+  background: #faf3fc;
+  padding: 10px 12px 12px;
+  min-width: 252px;
+}
+
+.field-control label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.help-dot {
   display: inline-grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--md-secondary-container);
-  color: var(--md-on-secondary-container);
-  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  font-size: 13px;
   font-weight: 900;
-  cursor: help;
+  flex: 0 0 auto;
 }
 
-select,
-input {
-  min-height: 48px;
-  padding: 0 14px;
-  border: 1px solid var(--md-outline);
+select, input {
+  width: 100%;
+  min-height: 54px;
   border-radius: 12px;
-  background: var(--md-surface);
-  color: var(--md-on-surface);
+  border: 1.5px solid #8f8794;
+  padding: 0 16px;
+  background: #fff9ff;
+  color: var(--md-text);
+  font-weight: 800;
+  outline-color: var(--md-primary);
 }
-select:focus,
-input:focus { outline: 3px solid rgb(103 80 164 / 20%); border-color: var(--md-primary); }
 
-.workspace-grid {
+.workflow-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 18px;
+  grid-template-columns: minmax(520px, 1fr) minmax(380px, 0.74fr);
+  gap: 30px;
   align-items: start;
 }
-.md-card { padding: 16px; }
-.card-header { justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.card-header.compact h3 { font-size: 16px; }
-.card-header h3 { margin: 0 0 4px; font-size: 18px; }
-.card-header p { margin: 0; color: var(--md-on-surface-variant); font-size: 13px; }
 
-.video-wrap { position: relative; width: 100%; border-radius: var(--radius-lg); overflow: hidden; background: #141218; }
-video { width: 100%; max-height: 560px; background: #141218; display: block; }
-#overlay { display: none; }
-
-.action-row,
-.actions-panel { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
-.inspector-column { display: grid; gap: 18px; }
-.preview-card canvas {
-  width: 224px;
-  height: 224px;
-  max-width: 100%;
-  border: 1px dashed var(--md-outline);
-  border-radius: 18px;
-  background: var(--md-surface);
-  display: block;
-  margin-inline: auto;
+.left-flow, .right-flow {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
-pre {
-  background: #141218;
-  color: #f5eff7;
-  padding: 14px;
-  border-radius: 18px;
-  min-height: 220px;
-  max-height: 360px;
-  white-space: pre-wrap;
-  overflow: auto;
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.card-title-row h2 {
   margin: 0;
-  font-size: 12px;
+  font-size: 21px;
+  line-height: 1.12;
+  font-weight: 900;
 }
 
-button { transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease; }
-button:active:not(:disabled) { transform: scale(0.98); }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-.filled-button,
-.tonal-button,
-.outlined-button {
-  min-height: 44px;
+.card-title-row p {
+  margin: 6px 0 0;
+  color: var(--md-muted);
+  font-size: 14px;
+}
+
+.capture-card {
+  background: var(--md-secondary-container);
+  border-color: var(--md-outline-strong);
+  border-radius: 64px;
+  padding: 22px;
+}
+
+.capture-stage {
+  width: 100%;
+  min-height: 320px;
+  margin-top: 14px;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #121015;
+  position: relative;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.crop-canvas {
+  width: min(360px, 72%);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 18px;
+  border: 2px dashed #77727c;
+  background: #fffaff;
+}
+
+.idle-box {
+  width: min(360px, 72%);
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  border: 2px dashed #77727c;
+  background: #fffaff;
+  color: var(--md-muted);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 20px;
+  font-weight: 700;
+}
+
+.camera-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 14px;
+}
+
+.md-button {
+  min-height: 56px;
   border-radius: 999px;
-  padding: 0 20px;
-  font-weight: 800;
+  border: 0;
+  padding: 0 28px;
   cursor: pointer;
-}
-.filled-button { border: 0; background: var(--md-primary); color: var(--md-on-primary); box-shadow: var(--shadow-1); }
-.tonal-button { border: 0; background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
-.outlined-button { border: 1px solid var(--md-outline); background: transparent; color: var(--md-primary); }
-.filled-button:hover:not(:disabled),
-.tonal-button:hover:not(:disabled),
-.outlined-button:hover:not(:disabled) { box-shadow: var(--shadow-2); }
-
-.info-grid,
-.scenario-grid,
-.model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-.info-card,
-.scenario-card,
-.model-card { padding: 18px; min-height: 120px; display: grid; align-content: start; gap: 8px; }
-.info-card span,
-.scenario-card small,
-.model-card small,
-.doc-list span { color: var(--md-on-surface-variant); }
-.scenario-card span,
-.model-card span { font-size: 11px; font-weight: 900; letter-spacing: 0.6px; text-transform: uppercase; }
-.scenario-card.live { background: var(--md-success-container); }
-.scenario-card.attack { background: var(--md-error-container); }
-.scenario-card.hard { background: var(--md-warning-container); }
-.model-card.emphasized { background: var(--md-primary-container); color: var(--md-on-primary-container); }
-.doc-list { display: grid; gap: 12px; }
-.doc-list > div { padding: 16px; display: grid; gap: 5px; }
-
-@media (max-width: 1180px) {
-  .app-shell { grid-template-columns: 72px minmax(0, 1fr); }
-  .side-drawer { display: none; }
+  font-weight: 900;
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
 }
 
-@media (max-width: 900px) {
-  .content { padding: 16px; }
-  .top-app-bar { flex-direction: column; }
-  .workspace-grid { grid-template-columns: 1fr; }
-  .controls-grid { grid-template-columns: 1fr; }
+.md-button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--md-shadow); }
+.md-button:disabled { opacity: 0.55; cursor: not-allowed; }
+.md-button.filled { background: var(--md-primary); color: var(--md-on-primary); }
+.md-button.tonal { background: var(--md-primary-container); color: var(--md-primary-strong); }
+.action-button { background: var(--md-primary); color: var(--md-on-primary); width: 100%; }
+
+.primary-actions { display: grid; gap: 18px; }
+.two-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.one-action { grid-template-columns: 1fr; }
+
+.result-card {
+  padding: 24px;
 }
 
-@media (max-width: 640px) {
-  .app-shell { grid-template-columns: 1fr; }
-  .navigation-rail { display: none; }
-  .content { padding: 10px; }
-  .surface-section, .top-app-bar { border-radius: 20px; }
+.result-card pre {
+  margin: 18px 0 0;
+  min-height: 320px;
+  max-height: 470px;
+  overflow: auto;
+  border-radius: 18px;
+  background: #141116;
+  color: #fff;
+  padding: 24px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.mobile-topbar { display: none; }
+.drawer-scrim { display: none; }
+.icon-button {
+  border: 0;
+  background: #231f29;
+  color: #fff;
+  border-radius: 999px;
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+}
+
+@media (max-width: 1120px) {
+  .workflow-grid { grid-template-columns: 1fr; }
+  .right-flow { max-width: none; }
+  .result-card pre { min-height: 280px; }
+}
+
+@media (max-width: 760px) {
+  body { background: #fffcff; }
+
+  .mobile-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    background: #fffcff;
+    border-bottom: 1px solid var(--md-outline);
+  }
+
+  .mobile-brand { display: flex; flex-direction: column; }
+  .mobile-brand span { font-size: 12px; color: var(--md-muted); }
+
+  .app-shell { display: block; min-height: calc(100vh - 72px); }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 320px;
+    max-width: 86vw;
+    height: 100vh;
+    transform: translateX(-104%);
+    transition: transform 180ms ease;
+    box-shadow: var(--md-shadow);
+    border-right: 0;
+  }
+
+  .sidebar.drawer-open { transform: translateX(0); }
+
+  .drawer-scrim.visible {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.32);
+    z-index: 19;
+  }
+
+  .main-content { padding: 14px 18px 28px; }
+
+  .hero-card {
+    min-height: auto;
+    padding: 18px;
+    border-radius: 0 0 22px 22px;
+    margin: -14px -18px 18px;
+  }
+
+  .hero-card h1 { font-size: 28px; margin-top: 10px; }
+  .hero-card p { font-size: 13px; }
+  .status-chips { display: none; }
+
+  .filter-row, .two-fields { display: flex; flex-direction: column; gap: 14px; }
+  .compact-field { width: 100%; min-width: 0; }
+
+  .workflow-grid { display: flex; flex-direction: column; gap: 18px; }
+  .left-flow { order: 1; }
+  .right-flow { order: 2; }
+
+  .capture-card {
+    border-radius: 32px;
+    padding: 18px;
+  }
+
+  .capture-stage { min-height: 230px; }
+  .camera-video { min-height: 230px; }
+  .crop-canvas, .idle-box { width: min(224px, 76%); }
+
+  .camera-actions { flex-direction: column; }
+  .camera-actions .md-button { width: 100%; }
+  .two-actions, .one-action { grid-template-columns: 1fr; }
+  .primary-actions .md-button { width: 100%; }
+
+  .result-card { padding: 18px; }
+  .result-card pre { min-height: 260px; max-height: 420px; font-size: 12px; padding: 18px; }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive mobile flow refinements
+   --------------------------------------------------------------------------
+   Mobile has three explicit states:
+   1) idle: model + Iniciar cámara only. The camera placeholder and backend
+      result are hidden to keep the first screen clean.
+   2) camera: webcam + Detener cámara + verification/enrollment actions.
+      Backend result remains hidden until an action is executed.
+   3) captured: the camera card becomes the crop card, backend result appears,
+      and only Iniciar cámara remains to repeat the flow.
+*/
+@media (max-width: 760px) {
+  .main-content {
+    padding: 0 18px 32px;
+  }
+
+  .hero-card {
+    margin: 0 -18px 18px;
+    padding: 18px 22px 22px;
+    border-radius: 0 0 28px 28px;
+  }
+
+  .filter-row {
+    margin-bottom: 18px;
+  }
+
+  .compact-field {
+    padding: 16px 18px;
+    border-radius: 0;
+    background: #faf3fc;
+  }
+
+  .compact-field label {
+    font-size: 18px;
+  }
+
+  select,
+  input {
+    min-height: 64px;
+    border-radius: 14px;
+    font-size: 20px;
+    padding: 0 18px;
+  }
+
+  /* State 1: initial mobile screen */
+  .flow-state-idle .workflow-grid {
+    gap: 0;
+  }
+
+  .flow-state-idle .capture-card {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+    border-radius: 0;
+  }
+
+  .flow-state-idle .capture-card .card-title-row,
+  .flow-state-idle .capture-stage,
+  .flow-state-idle .right-flow {
+    display: none !important;
+  }
+
+  .flow-state-idle .camera-actions {
+    padding-top: 18px;
+  }
+
+  .flow-state-idle .camera-actions .md-button {
+    width: 100%;
+    min-height: 58px;
+    border-radius: 14px;
+    background: var(--md-secondary-container);
+    color: #160f1c;
+    border: 1px solid var(--md-outline-strong);
+    box-shadow: none;
+    font-weight: 500;
+  }
+
+  /* State 2: camera active */
+  .flow-state-camera .right-flow {
+    display: none !important;
+  }
+
+  .flow-state-camera .capture-card {
+    border-radius: 34px;
+    padding: 20px;
+  }
+
+  .flow-state-camera .capture-stage {
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+    border-radius: 22px;
+    margin-top: 18px;
+  }
+
+  .flow-state-camera .camera-video {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .flow-state-camera .camera-actions {
+    padding-top: 18px;
+  }
+
+  .flow-state-camera .camera-actions .md-button,
+  .flow-state-camera .primary-actions .md-button {
+    width: 100%;
+    min-height: 60px;
+    border-radius: 14px;
+    font-size: 16px;
+  }
+
+  .flow-state-camera .primary-actions {
+    margin-top: 18px;
+    gap: 16px;
+  }
+
+  /* State 3: captured result */
+  .flow-state-captured .workflow-grid {
+    gap: 18px;
+  }
+
+  .flow-state-captured .capture-card {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 34px;
+    padding: 20px;
+  }
+
+  .flow-state-captured .capture-stage {
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    background: #141116;
+    border-radius: 22px;
+    margin-top: 18px;
+  }
+
+  .flow-state-captured .crop-canvas {
+    width: min(300px, 76%);
+    max-width: 300px;
+  }
+
+  .flow-state-captured .camera-actions .md-button {
+    width: 100%;
+    min-height: 60px;
+    border-radius: 14px;
+    font-size: 16px;
+  }
+
+  .flow-state-captured .right-flow {
+    display: flex !important;
+    width: 100%;
+  }
+
+  .flow-state-captured .result-card {
+    width: 100%;
+  }
+
+  .flow-state-captured .result-card pre {
+    min-height: 360px;
+    max-height: 520px;
+    border-radius: 18px;
+    font-size: 12px;
+    overflow: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-topbar {
+    height: 68px;
+    padding: 10px 14px;
+  }
+
+  .icon-button {
+    width: 54px;
+    height: 54px;
+    font-size: 26px;
+  }
+
+  .hero-card h1 {
+    font-size: 34px;
+  }
+
+  .capture-card .card-title-row h2,
+  .result-card .card-title-row h2 {
+    font-size: 28px;
+  }
+
+  .capture-card .card-title-row p,
+  .result-card .card-title-row p {
+    font-size: 16px;
+  }
+
+  .flow-state-camera .capture-stage {
+    aspect-ratio: 1 / 1;
+  }
+
+  .flow-state-captured .crop-canvas {
+    width: min(280px, 82%);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   FINAL MOBILE WIDTH FIXES - keep desktop unchanged
+   --------------------------------------------------------------------------
+   These overrides force the mobile flow to consume the full available width.
+   They fix the states validated in the UX sketches:
+   1) idle: model selector + full-width start button;
+   2) camera: full-width camera card + full-width action buttons;
+   3) captured: full-width crop/result cards + full-width restart button.
+*/
+@media (max-width: 760px) {
+  html,
+  body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .main-content,
+  .view,
+  .workflow-grid,
+  .left-flow,
+  .right-flow,
+  .filter-row,
+  .compact-field,
+  .capture-card,
+  .result-card,
+  .primary-actions,
+  .camera-actions {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+
+  .main-content {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  .filter-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .compact-field {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .compact-field select,
+  .compact-field input {
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .workflow-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .left-flow,
+  .right-flow {
+    align-items: stretch !important;
+  }
+
+  .md-button,
+  .action-button,
+  .camera-actions .md-button,
+  .primary-actions .md-button {
+    width: 100% !important;
+    min-height: 60px;
+    border-radius: 999px !important;
+    text-align: center;
+  }
+
+  /* Estado inicial: solo modelo + botón iniciar. */
+  .flow-state-idle .capture-card {
+    display: block !important;
+  }
+
+  .flow-state-idle .camera-actions {
+    display: block !important;
+    padding-top: 20px !important;
+  }
+
+  .flow-state-idle .camera-actions .md-button {
+    background: var(--md-secondary-container) !important;
+    color: #160f1c !important;
+    border: 1px solid var(--md-outline-strong) !important;
+    box-shadow: none !important;
+  }
+
+  /* Estado cámara activa: cámara y acciones ocupan todo el ancho. */
+  .flow-state-camera .capture-card,
+  .flow-state-camera .primary-actions {
+    width: 100% !important;
+  }
+
+  .flow-state-camera .capture-stage {
+    width: 100% !important;
+    aspect-ratio: 4 / 3;
+  }
+
+  .flow-state-camera .camera-video {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .flow-state-camera .primary-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Estado capturado: crop y resultado usan el ancho disponible. */
+  .flow-state-captured .capture-card,
+  .flow-state-captured .result-card {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .flow-state-captured .capture-stage {
+    width: 100% !important;
+    aspect-ratio: 1 / 1;
+  }
+
+  .flow-state-captured .crop-canvas {
+    width: min(320px, 82vw) !important;
+    max-width: 100% !important;
+  }
+
+  .flow-state-captured .right-flow {
+    display: flex !important;
+  }
+
+  .flow-state-captured .result-card pre {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .main-content {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .flow-state-camera .capture-stage {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   FINAL MOBILE SAFE-GUTTER FIX
+   --------------------------------------------------------------------------
+   Keep the desktop layout unchanged. On mobile, every interactive block must
+   fill the available content width while preserving equal left/right margins.
+   This prevents cards and buttons from touching or overflowing the right edge
+   of the device viewport.
+*/
+@media (max-width: 760px) {
+  :root {
+    --mobile-page-gutter: 24px;
+  }
+
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .app-shell,
+  .main-content,
+  .active-view,
+  .view,
+  .workflow-grid,
+  .left-flow,
+  .right-flow {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .main-content {
+    padding-left: var(--mobile-page-gutter) !important;
+    padding-right: var(--mobile-page-gutter) !important;
+  }
+
+  .hero-card {
+    margin-left: calc(var(--mobile-page-gutter) * -1) !important;
+    margin-right: calc(var(--mobile-page-gutter) * -1) !important;
+    padding-left: var(--mobile-page-gutter) !important;
+    padding-right: var(--mobile-page-gutter) !important;
+  }
+
+  .filter-row,
+  .workflow-grid,
+  .left-flow,
+  .right-flow,
+  .camera-actions,
+  .primary-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .compact-field,
+  .capture-card,
+  .result-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .capture-card,
+  .result-card,
+  .compact-field {
+    overflow: hidden;
+  }
+
+  select,
+  input,
+  .md-button,
+  .action-button,
+  .camera-actions .md-button,
+  .primary-actions .md-button {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .md-button,
+  .action-button,
+  .camera-actions .md-button,
+  .primary-actions .md-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .flow-state-camera .capture-stage,
+  .flow-state-captured .capture-stage {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --mobile-page-gutter: 18px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE FINAL GUTTER + STATE VISIBILITY PATCH
+   This block intentionally comes last. It fixes the mobile right-edge issue by
+   sizing every interactive block against the real viewport width, not against
+   any overflowing parent. It also enforces the 3-state button visibility.
+--------------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  :root {
+    --mobile-page-gutter: 28px;
+    --mobile-content-width: calc(100dvw - (var(--mobile-page-gutter) * 2));
+  }
+
+  html,
+  body {
+    width: 100dvw;
+    max-width: 100dvw;
+    overflow-x: hidden !important;
+  }
+
+  .app-shell,
+  .main-content,
+  .view,
+  .active-view,
+  .workflow-grid,
+  .left-flow,
+  .right-flow {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .main-content {
+    padding-left: var(--mobile-page-gutter) !important;
+    padding-right: var(--mobile-page-gutter) !important;
+  }
+
+  .hero-card {
+    width: 100dvw !important;
+    max-width: 100dvw !important;
+    margin-left: calc(var(--mobile-page-gutter) * -1) !important;
+    margin-right: calc(var(--mobile-page-gutter) * -1) !important;
+    padding-left: var(--mobile-page-gutter) !important;
+    padding-right: var(--mobile-page-gutter) !important;
+  }
+
+  .filter-row,
+  .workflow-grid,
+  .left-flow,
+  .right-flow {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 18px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .compact-field,
+  .capture-card,
+  .result-card,
+  .primary-actions,
+  .camera-actions {
+    width: var(--mobile-content-width) !important;
+    max-width: var(--mobile-content-width) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .compact-field select,
+  .compact-field input,
+  .md-button,
+  .action-button,
+  .camera-actions .md-button,
+  .primary-actions .md-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .capture-stage,
+  .camera-video,
+  .result-card pre {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .primary-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .camera-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    align-items: stretch !important;
+  }
+
+  /* Estado 1: inicial. Solo se ve el botón iniciar cámara. */
+  .flow-state-idle #livenessStopBtn,
+  .flow-state-idle #enrollStopBtn,
+  .flow-state-idle #livenessVerifyActions,
+  .flow-state-idle #enrollActionGroup {
+    display: none !important;
+  }
+
+  .flow-state-idle #livenessStartBtn,
+  .flow-state-idle #enrollStartBtn {
+    display: flex !important;
+  }
+
+  /* Estado 2: cámara activa. Solo se ve detener + acciones. */
+  .flow-state-camera #livenessStartBtn,
+  .flow-state-camera #enrollStartBtn {
+    display: none !important;
+  }
+
+  .flow-state-camera #livenessStopBtn,
+  .flow-state-camera #enrollStopBtn,
+  .flow-state-camera #livenessVerifyActions,
+  .flow-state-camera #enrollActionGroup {
+    display: flex !important;
+  }
+
+  .flow-state-camera #livenessVerifyActions,
+  .flow-state-camera #enrollActionGroup {
+    display: grid !important;
+  }
+
+  /* Estado 3: captura realizada. Solo se ve iniciar cámara + resultado. */
+  .flow-state-captured #livenessStopBtn,
+  .flow-state-captured #enrollStopBtn,
+  .flow-state-captured #livenessVerifyActions,
+  .flow-state-captured #enrollActionGroup {
+    display: none !important;
+  }
+
+  .flow-state-captured #livenessStartBtn,
+  .flow-state-captured #enrollStartBtn {
+    display: flex !important;
+  }
+
+  .flow-state-captured .right-flow {
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --mobile-page-gutter: 22px;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --mobile-page-gutter: 18px;
+  }
+}
+
+/* =======================================================================
+   MOBILE GUTTER FIX - FINAL CLEAN OVERRIDE
+   Purpose: preserve the validated desktop layout and fix mobile spacing.
+   Rule: in mobile, the page owns the gutter via .main-content padding.
+   Children must NOT use vw-based widths; they must fill the parent content box.
+   ======================================================================= */
+@media (max-width: 760px) {
+  :root {
+    --mobile-page-gutter: 28px;
+  }
+
+  html,
+  body {
+    width: auto !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .app-shell {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    padding-left: var(--mobile-page-gutter) !important;
+    padding-right: var(--mobile-page-gutter) !important;
+    padding-bottom: 36px !important;
+  }
+
+  .hero-card {
+    width: calc(100% + (var(--mobile-page-gutter) * 2)) !important;
+    max-width: none !important;
+    margin-left: calc(var(--mobile-page-gutter) * -1) !important;
+    margin-right: calc(var(--mobile-page-gutter) * -1) !important;
+    padding-left: var(--mobile-page-gutter) !important;
+    padding-right: var(--mobile-page-gutter) !important;
+  }
+
+  .view,
+  .active-view,
+  .filter-row,
+  .workflow-grid,
+  .left-flow,
+  .right-flow,
+  .camera-actions,
+  .primary-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: visible !important;
+  }
+
+  .filter-row,
+  .workflow-grid,
+  .left-flow,
+  .right-flow {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .compact-field,
+  .capture-card,
+  .result-card,
+  .primary-actions,
+  .camera-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .capture-card,
+  .result-card,
+  .compact-field {
+    overflow: hidden !important;
+  }
+
+  select,
+  input,
+  .md-button,
+  .action-button,
+  .camera-actions .md-button,
+  .primary-actions .md-button,
+  .capture-stage,
+  .camera-video,
+  .result-card pre {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .md-button,
+  .action-button,
+  .camera-actions .md-button,
+  .primary-actions .md-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 60px !important;
+    border-radius: 999px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .primary-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .camera-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    align-items: stretch !important;
+  }
+
+  .flow-state-camera .capture-stage {
+    aspect-ratio: 4 / 3 !important;
+    min-height: 0 !important;
+  }
+
+  .flow-state-captured .capture-stage {
+    aspect-ratio: 1 / 1 !important;
+    min-height: 0 !important;
+  }
+
+  .flow-state-captured .crop-canvas {
+    width: min(320px, 82%) !important;
+    max-width: 100% !important;
+  }
+
+  /* Button visibility by state. These rules are intentionally last. */
+  .flow-state-idle #livenessStopBtn,
+  .flow-state-idle #enrollStopBtn,
+  .flow-state-idle #livenessVerifyActions,
+  .flow-state-idle #enrollActionGroup {
+    display: none !important;
+  }
+
+  .flow-state-idle #livenessStartBtn,
+  .flow-state-idle #enrollStartBtn {
+    display: flex !important;
+  }
+
+  .flow-state-camera #livenessStartBtn,
+  .flow-state-camera #enrollStartBtn {
+    display: none !important;
+  }
+
+  .flow-state-camera #livenessStopBtn,
+  .flow-state-camera #enrollStopBtn {
+    display: flex !important;
+  }
+
+  .flow-state-camera #livenessVerifyActions,
+  .flow-state-camera #enrollActionGroup {
+    display: grid !important;
+  }
+
+  .flow-state-captured #livenessStopBtn,
+  .flow-state-captured #enrollStopBtn,
+  .flow-state-captured #livenessVerifyActions,
+  .flow-state-captured #enrollActionGroup {
+    display: none !important;
+  }
+
+  .flow-state-captured #livenessStartBtn,
+  .flow-state-captured #enrollStartBtn {
+    display: flex !important;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --mobile-page-gutter: 22px;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --mobile-page-gutter: 18px;
+  }
 }
