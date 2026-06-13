@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+"""
+FaceGuard - Generación de figuras para informe y exposición.
+
+Usa logs y reportes del entrenamiento para crear curvas de pérdida, curvas
+ROC-AUC, curvas ACER, evolución de threshold, barras comparativas y matrices
+de confusión. No entrena modelos; solo consume artefactos ya generados.
+"""
 from pathlib import Path
 import json
 import math
@@ -15,6 +23,7 @@ FIGURES_DIR = OUTPUTS_DIR / "figures"
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 
+# Convierte valores a float de forma segura para evitar errores al graficar.
 def safe_float(v, default=None):
     try:
         if v is None or (isinstance(v, float) and math.isnan(v)):
@@ -24,6 +33,7 @@ def safe_float(v, default=None):
         return default
 
 
+# Escribe el valor numérico encima de cada barra en gráficos comparativos.
 def annotate_bars(ax, values, fmt="{:.4f}"):
     for i, v in enumerate(values):
         if v is None or pd.isna(v):
@@ -31,6 +41,7 @@ def annotate_bars(ax, values, fmt="{:.4f}"):
         ax.text(i, v, fmt.format(v), ha="center", va="bottom", fontsize=8)
 
 
+# Busca una columna por posibles nombres, tolerando diferencias de capitalización.
 def detect_col(df, candidates):
     cols_lower = {c.lower(): c for c in df.columns}
     for c in candidates:
@@ -39,6 +50,7 @@ def detect_col(df, candidates):
     return None
 
 
+# Carga model_comparison.csv y fuerza a numérico las métricas relevantes.
 def load_model_comparison():
     path = REPORTS_DIR / "model_comparison.csv"
     if not path.exists():
@@ -57,6 +69,7 @@ def load_model_comparison():
     return df
 
 
+# Genera curvas por época a partir de *_history.csv.
 def generate_history_plots():
     history_files = sorted(LOGS_DIR.glob("*_history.csv"))
     if not history_files:
@@ -147,6 +160,7 @@ def generate_history_plots():
     print("OK: gráficos de entrenamiento generados.")
 
 
+# Crea un gráfico de barras para una métrica específica.
 def bar_plot(df, metric, title, output_name, ascending=False):
     if metric not in df.columns:
         return
@@ -171,6 +185,7 @@ def bar_plot(df, metric, title, output_name, ascending=False):
     plt.close()
 
 
+# Genera comparaciones globales, RGB, depth y perfil del mejor modelo.
 def generate_comparison_plots():
     df = load_model_comparison()
 
@@ -233,6 +248,7 @@ def generate_comparison_plots():
     print("OK: gráficos comparativos generados.")
 
 
+# Genera matrices de confusión desde predictions_*.csv si existen.
 def generate_confusion_matrix_plots():
     prediction_files = sorted(REPORTS_DIR.glob("predictions_*.csv"))
     if not prediction_files:
@@ -287,6 +303,7 @@ def generate_confusion_matrix_plots():
     print("OK: matrices de confusión generadas.")
 
 
+# Escribe un resumen Markdown listando las figuras generadas.
 def generate_markdown_summary():
     df = load_model_comparison()
 
@@ -343,6 +360,7 @@ def generate_markdown_summary():
     print(f"OK: resumen markdown generado en {out_path}")
 
 
+# Punto de entrada: ejecuta todos los generadores de figuras.
 def main():
     print("Generando gráficos del entrenamiento...")
     generate_history_plots()

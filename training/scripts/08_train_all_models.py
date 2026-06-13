@@ -20,6 +20,7 @@ Entrenar todos RGB + depth:
     python training/scripts/08_train_all_models.py --models all --modality all --epochs 12 --batch-size 32
 """
 
+# Importaciones base y librerías de entrenamiento/evaluación.
 from __future__ import annotations
 
 import argparse
@@ -80,8 +81,10 @@ MODEL_NAMES = ["cnn_baseline", "efficientnet_b0", "mobilenetv3_small", "cdcn"]
 
 # ============================================================
 # CONFIG
+# Configuración central del entrenamiento: modelo, modalidad, batch, LR, etc.
 # ============================================================
 
+# Dataclass usado para transportar de forma ordenada todos los hiperparámetros.
 @dataclass
 class TrainConfig:
     model_name: str
@@ -100,6 +103,7 @@ class TrainConfig:
     use_amp: bool = True
 
 
+# Crea las carpetas de salida necesarias antes de guardar logs, figuras y checkpoints.
 def ensure_dirs() -> None:
     dirs = [
         OUTPUTS_DIR,
@@ -116,6 +120,7 @@ def ensure_dirs() -> None:
         d.mkdir(parents=True, exist_ok=True)
 
 
+# Fija semillas para mejorar reproducibilidad entre ejecuciones.
 def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -125,6 +130,7 @@ def set_seed(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
+# Selecciona automáticamente el dispositivo disponible: CUDA, Apple MPS o CPU.
 def get_device() -> torch.device:
     if torch.cuda.is_available():
         return torch.device("cuda")
@@ -137,8 +143,10 @@ def get_device() -> torch.device:
 
 # ============================================================
 # DATASET
+# Dataset personalizado: lee carpetas train/val/test con subcarpetas live y spoof.
 # ============================================================
 
+# Clase Dataset de PyTorch para cargar imágenes faciales y etiquetas binarias.
 class FaceGuardImageDataset(Dataset):
     """
     Dataset binario:
@@ -146,6 +154,7 @@ class FaceGuardImageDataset(Dataset):
       spoof -> 0
     """
 
+    # Constructor: recibe raíz del dataset, split y transformaciones.
     def __init__(self, root_dir: Path, split: str, transform=None):
         self.root_dir = Path(root_dir)
         self.split = split
@@ -156,16 +165,20 @@ class FaceGuardImageDataset(Dataset):
         if not split_dir.exists():
             raise RuntimeError(f"No existe la carpeta del split: {split_dir}")
 
+        # Lista interna de muestras: cada elemento será (ruta_imagen, etiqueta).
         self.samples: List[Tuple[Path, int]] = []
 
+        # Estructura esperada: split/live para rostros reales y split/spoof para ataques.
         live_dir = split_dir / "live"
         spoof_dir = split_dir / "spoof"
 
+        # Recorre recursivamente imágenes LIVE y asigna etiqueta 1.
         if live_dir.exists():
             for p in sorted(live_dir.rglob("*")):
                 if p.suffix.lower() in {".jpg", ".jpeg", ".png", ".bmp", ".webp"}:
                     self.samples.append((p, 1))
 
+        # Recorre recursivamente imágenes SPOOF y asigna etiqueta 0.
         if spoof_dir.exists():
             for p in sorted(spoof_dir.rglob("*")):
                 if p.suffix.lower() in {".jpg", ".jpeg", ".png", ".bmp", ".webp"}:
@@ -174,24 +187,30 @@ class FaceGuardImageDataset(Dataset):
         if len(self.samples) == 0:
             raise RuntimeError(f"No se encontraron imágenes en {split_dir}")
 
+    # Devuelve el número total de muestras disponibles.
     def __len__(self) -> int:
         return len(self.samples)
 
+    # Carga una muestra individual: imagen transformada, etiqueta y ruta original.
     def __getitem__(self, idx: int):
         path, label = self.samples[idx]
 
+        # Se fuerza RGB para que todas las arquitecturas reciban 3 canales.
         img = Image.open(path).convert("RGB")
 
         if self.transform is not None:
             img = self.transform(img)
 
+        # BCEWithLogitsLoss espera etiquetas float para clasificación binaria.
         y = torch.tensor(label, dtype=torch.float32)
 
         return img, y, str(path)
 
 
+# Define transformaciones: con augmentation para train y deterministas para val/test.
 def get_transforms(image_size: int, train: bool) -> transforms.Compose:
     if train:
+        # En entrenamiento se aplica data augmentation para mejorar generalización.
         return transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
@@ -225,6 +244,7 @@ def get_transforms(image_size: int, train: bool) -> transforms.Compose:
             ]
         )
 
+    # En validación/test no se aplica augmentation: solo resize + normalización.
     return transforms.Compose(
         [
             transforms.Resize((image_size, image_size)),
@@ -237,6 +257,7 @@ def get_transforms(image_size: int, train: bool) -> transforms.Compose:
     )
 
 
+# Construye DataLoaders y aplica WeightedRandomSampler para manejar desbalance LIVE/SPOOF.
 def build_dataloaders(cfg: TrainConfig):
     data_dir = Path(cfg.data_dir)
 
@@ -258,6 +279,7 @@ def build_dataloaders(cfg: TrainConfig):
         transform=get_transforms(cfg.image_size, train=False),
     )
 
+    # Se extraen etiquetas del train set para contar clases y construir pesos.
     train_labels = [label for _, label in train_ds.samples]
 
     class_counts = {
@@ -268,6 +290,7 @@ def build_dataloaders(cfg: TrainConfig):
     sampler = None
     shuffle = True
 
+    # El sampler ponderado evita que la clase mayoritaria domine los batches.
     if cfg.use_weighted_sampler:
         weights_per_class = {
             cls: 1.0 / max(count, 1)
@@ -314,8 +337,10 @@ def build_dataloaders(cfg: TrainConfig):
 
 # ============================================================
 # MODELS
+# Definición de las arquitecturas evaluadas en FaceGuard.
 # ============================================================
 
+# CNN propia usada como línea base entrenada desde cero.
 class CNNBaseline(nn.Module):
     def __init__(self):
         super().__init__()
@@ -362,6 +387,7 @@ class CNNBaseline(nn.Module):
         return x.squeeze(1)
 
 
+# Convolución de diferencia central: resalta cambios locales útiles para anti-spoofing.
 class CentralDifferenceConv2d(nn.Module):
     """
     Central Difference Convolution simplificada para CDCN.
@@ -424,6 +450,7 @@ class CentralDifferenceConv2d(nn.Module):
         return out_normal - self.theta * out_diff
 
 
+# Bloque residual basado en convoluciones de diferencia central.
 class CDCBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int, theta: float = 0.7):
         super().__init__()
@@ -464,6 +491,7 @@ class CDCBlock(nn.Module):
         return F.relu(self.block(x) + self.shortcut(x), inplace=True)
 
 
+# Arquitectura CDCN compacta especializada para detección de ataques de presentación.
 class CDCN(nn.Module):
     """
     CDCN compacto para face anti-spoofing.
@@ -524,6 +552,7 @@ class CDCN(nn.Module):
         return self.head(x).squeeze(1)
 
 
+# Fábrica de modelos: reconstruye la arquitectura indicada por nombre.
 def build_model(model_name: str, pretrained: bool = True) -> nn.Module:
     model_name = model_name.lower().strip()
 
@@ -531,9 +560,11 @@ def build_model(model_name: str, pretrained: bool = True) -> nn.Module:
         return CNNBaseline()
 
     if model_name == "efficientnet_b0":
+        # Transfer learning: pesos ImageNet si pretrained=True.
         weights = EfficientNet_B0_Weights.DEFAULT if pretrained else None
         base_model = efficientnet_b0(weights=weights)
         in_features = base_model.classifier[1].in_features
+        # Se reemplaza la cabeza ImageNet de 1000 clases por una salida binaria LIVE/SPOOF.
         base_model.classifier[1] = nn.Linear(in_features, 1)
 
         class EfficientNetB0Binary(nn.Module):
@@ -546,6 +577,7 @@ def build_model(model_name: str, pretrained: bool = True) -> nn.Module:
 
         return EfficientNetB0Binary(base_model)
 
+    # Construcción de MobileNetV3-Small adaptado a salida binaria.
     if model_name == "mobilenetv3_small":
         weights = MobileNet_V3_Small_Weights.DEFAULT if pretrained else None
         base_model = mobilenet_v3_small(weights=weights)
@@ -571,10 +603,12 @@ def build_model(model_name: str, pretrained: bool = True) -> nn.Module:
 # METRICS
 # ============================================================
 
+# Convierte logits a probabilidades en numpy.
 def sigmoid_np(logits: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-logits))
 
 
+# Calcula métricas clásicas y biométricas para un threshold dado.
 def calculate_metrics(
     y_true: np.ndarray,
     y_prob: np.ndarray,
@@ -625,6 +659,7 @@ def calculate_metrics(
     }
 
 
+# Busca el threshold que minimiza ACER en validación.
 def find_best_threshold_by_acer(
     y_true: np.ndarray,
     y_prob: np.ndarray,
@@ -648,6 +683,7 @@ def find_best_threshold_by_acer(
 # TRAIN / EVAL
 # ============================================================
 
+# Ejecuta inferencia sobre un DataLoader y mide latencia promedio por muestra.
 def run_inference(model, loader, device):
     model.eval()
 
@@ -677,6 +713,7 @@ def run_inference(model, loader, device):
     return labels_np, probs_np, all_paths, latency_ms
 
 
+# Ejecuta una época de entrenamiento con forward, loss, backward y optimizer.step().
 def train_one_epoch(
     model,
     loader,
@@ -715,6 +752,7 @@ def train_one_epoch(
     return float(np.mean(losses)) if losses else float("nan")
 
 
+# Calcula la pérdida promedio en validación/test sin actualizar pesos.
 def evaluate_loss(model, loader, criterion, device) -> float:
     model.eval()
 
@@ -732,6 +770,7 @@ def evaluate_loss(model, loader, criterion, device) -> float:
     return float(np.mean(losses)) if losses else float("nan")
 
 
+# Genera curva combinada de loss, ACER y AUC por época.
 def plot_training_curves(history: List[Dict], out_path: Path) -> None:
     if not history:
         return
@@ -757,6 +796,7 @@ def plot_training_curves(history: List[Dict], out_path: Path) -> None:
     plt.close()
 
 
+# Genera matriz de confusión usando el threshold seleccionado.
 def plot_confusion(
     y_true: np.ndarray,
     y_prob: np.ndarray,
@@ -784,6 +824,7 @@ def plot_confusion(
     plt.close()
 
 
+# Genera curva ROC y calcula AUC.
 def plot_roc(y_true: np.ndarray, y_prob: np.ndarray, out_path: Path) -> None:
     try:
         fpr, tpr, _ = roc_curve(y_true, y_prob)
@@ -804,6 +845,7 @@ def plot_roc(y_true: np.ndarray, y_prob: np.ndarray, out_path: Path) -> None:
     plt.close()
 
 
+# Entrena un modelo completo: datos, modelo, loss, optimizador, validación, checkpoint y test.
 def train_model(cfg: TrainConfig) -> Dict:
     ensure_dirs()
     set_seed(cfg.seed)
@@ -818,6 +860,7 @@ def train_model(cfg: TrainConfig) -> Dict:
 
     print("Class counts train:", class_counts)
 
+    # Construye el modelo solicitado y lo mueve al dispositivo seleccionado.
     model = build_model(cfg.model_name, pretrained=cfg.pretrained).to(device)
 
     num_spoof = class_counts.get(0, 1)
@@ -826,14 +869,17 @@ def train_model(cfg: TrainConfig) -> Dict:
 
     pos_weight = torch.tensor([pos_weight_value], dtype=torch.float32).to(device)
 
+    # Loss binaria con peso positivo para compensar desbalance LIVE/SPOOF.
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
+    # AdamW permite fine-tuning estable y regularización por weight decay.
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=cfg.learning_rate,
         weight_decay=cfg.weight_decay,
     )
 
+    # Reduce el learning rate cuando ACER de validación deja de mejorar.
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode="min",
@@ -899,6 +945,7 @@ def train_model(cfg: TrainConfig) -> Dict:
             f"threshold={threshold:.3f}"
         )
 
+        # Checkpoint completo: pesos, configuración, threshold y métricas de validación.
         checkpoint_payload = {
             "model_name": cfg.model_name,
             "modality": cfg.modality,
@@ -912,6 +959,7 @@ def train_model(cfg: TrainConfig) -> Dict:
 
         torch.save(checkpoint_payload, last_path)
 
+        # Se guarda como best.pt únicamente si mejora ACER de validación.
         if val_metrics["acer"] < best_acer:
             best_acer = val_metrics["acer"]
             best_epoch = epoch
@@ -920,6 +968,7 @@ def train_model(cfg: TrainConfig) -> Dict:
         else:
             epochs_without_improvement += 1
 
+        # Early stopping: detiene si no hay mejora durante varias épocas.
         if epochs_without_improvement >= cfg.patience:
             print(f"Early stopping en epoch {epoch}. Mejor epoch={best_epoch}")
             break
@@ -928,6 +977,7 @@ def train_model(cfg: TrainConfig) -> Dict:
     model.load_state_dict(checkpoint["state_dict"])
     best_threshold = float(checkpoint["threshold"])
 
+    # Evaluación final en test usando el mejor threshold guardado.
     y_test, p_test, test_paths, test_latency_ms = run_inference(model, test_loader, device)
     test_metrics = calculate_metrics(y_test, p_test, threshold=best_threshold)
     test_metrics["latency_ms_per_sample"] = float(test_latency_ms)
@@ -991,6 +1041,7 @@ def train_model(cfg: TrainConfig) -> Dict:
 # MAIN
 # ============================================================
 
+# Parsea nombres de modelos desde consola: all o lista separada por comas.
 def parse_models(value: str) -> List[str]:
     value = value.strip().lower()
 
@@ -1006,6 +1057,7 @@ def parse_models(value: str) -> List[str]:
     return models
 
 
+# Parsea modalidad desde consola: rgb, depth o all.
 def parse_modalities(value: str) -> List[str]:
     value = value.strip().lower()
 
@@ -1018,6 +1070,7 @@ def parse_modalities(value: str) -> List[str]:
     return [value]
 
 
+# Punto de entrada: lee argumentos y ejecuta entrenamiento por modelo y modalidad.
 def main():
     parser = argparse.ArgumentParser()
 

@@ -24,6 +24,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REPORTS_DIR = PROJECT_ROOT / "training" / "outputs" / "reports"
 
 
+# Convierte un JSON de métricas en una fila plana para tabla comparativa.
 def flatten_result(payload: Dict[str, Any]) -> Dict[str, Any]:
     test_metrics = payload.get("test_metrics", {}) or {}
     class_counts = payload.get("class_counts_train", {}) or {}
@@ -47,6 +48,7 @@ def flatten_result(payload: Dict[str, Any]) -> Dict[str, Any]:
     return row
 
 
+# Lee todos los metrics_*.json disponibles en training/outputs/reports.
 def load_metrics_files() -> List[Dict[str, Any]]:
     files = sorted(REPORTS_DIR.glob("metrics_*_*.json"))
     rows: List[Dict[str, Any]] = []
@@ -68,6 +70,7 @@ def load_metrics_files() -> List[Dict[str, Any]]:
     return rows
 
 
+# Ordena resultados priorizando menor ACER, mayor ROC-AUC y menor latencia.
 def sort_results(df: pd.DataFrame) -> pd.DataFrame:
     preferred_cols = [
         "model_name",
@@ -116,6 +119,7 @@ def sort_results(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+# Genera Markdown sin depender de tabulate, útil para entornos mínimos.
 def dataframe_to_markdown_no_tabulate(df: pd.DataFrame, cols: List[str]) -> str:
     """
     Genera tabla Markdown sin depender de pandas.to_markdown ni tabulate.
@@ -143,6 +147,7 @@ def dataframe_to_markdown_no_tabulate(df: pd.DataFrame, cols: List[str]) -> str:
     return "\n".join(rows) + "\n"
 
 
+# Guarda un reporte Markdown legible con las columnas principales.
 def save_markdown(df: pd.DataFrame, path: Path) -> None:
     cols = [
         "model_name",
@@ -163,6 +168,7 @@ def save_markdown(df: pd.DataFrame, path: Path) -> None:
     path.write_text(md, encoding="utf-8")
 
 
+# Guarda best_model.json usando el criterio experimental de selección.
 def save_best_model(df: pd.DataFrame, path: Path) -> None:
     if len(df) == 0:
         path.write_text("{}", encoding="utf-8")
@@ -190,6 +196,7 @@ def save_best_model(df: pd.DataFrame, path: Path) -> None:
     path.write_text(json.dumps(best, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
+# Punto de entrada: consolida resultados y escribe CSV, MD y JSON final.
 def main() -> None:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
