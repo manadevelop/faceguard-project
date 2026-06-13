@@ -1,5 +1,7 @@
 <!doctype html>
 <html lang="es">
+
+<!-- Cabecera del documento: configuración base, fuentes y estilos globales -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,9 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/frontend/src/styles/global.css?v=md3-flow-responsive-20260612" />
 </head>
+
 <body>
+  <!-- Fondo oscuro usado para cerrar el menú lateral en vista móvil -->
   <div id="drawerScrim" class="drawer-scrim" aria-hidden="true"></div>
 
+  <!-- Barra superior móvil con botón de menú y nombre del sistema -->
   <header class="mobile-topbar">
     <button id="openDrawerBtn" class="icon-button" type="button" aria-label="Abrir menú">☰</button>
     <div class="mobile-brand">
@@ -20,8 +25,13 @@
     </div>
   </header>
 
+  <!-- Contenedor principal de la aplicación web -->
   <div class="app-shell">
+
+    <!-- Menú lateral principal con marca y navegación -->
     <aside id="sidebar" class="sidebar" aria-label="Navegación principal">
+
+      <!-- Bloque de identidad visual del sistema -->
       <div class="brand-block">
         <div class="brand-icon">FG</div>
         <div>
@@ -30,6 +40,7 @@
         </div>
       </div>
 
+      <!-- Navegación entre verificación de vida y enrolamiento -->
       <nav class="nav-list">
         <button class="nav-item active" data-target="livenessView" type="button">
           <span class="nav-icon">↝</span>
@@ -42,7 +53,10 @@
       </nav>
     </aside>
 
+    <!-- Área central donde se muestran las vistas funcionales del sistema -->
     <main class="main-content">
+
+      <!-- Tarjeta de presentación del sistema y estado general -->
       <section class="hero-card">
         <div class="hero-copy">
           <span class="assist-chip">Sistema web local</span>
@@ -55,7 +69,10 @@
         </div>
       </section>
 
+      <!-- Vista principal para verificar liveness facial -->
       <section id="livenessView" class="view active-view" aria-label="Verificar liveness">
+
+        <!-- Selector del modelo anti-spoofing usado para la verificación -->
         <div class="filter-row one-field">
           <div class="field-control md-card compact-field">
             <label for="livenessModelSelect">Modelo anti-spoofing <span class="help-dot">?</span></label>
@@ -68,8 +85,13 @@
           </div>
         </div>
 
+        <!-- Distribución de captura y resultados para el flujo de liveness -->
         <div class="workflow-grid">
+
+          <!-- Bloque izquierdo: cámara, crop facial y acciones de verificación -->
           <div class="left-flow">
+
+            <!-- Tarjeta de captura de cámara para liveness -->
             <section id="livenessCaptureCard" class="md-card capture-card" data-state="idle">
               <div class="card-title-row">
                 <div>
@@ -79,24 +101,28 @@
                 <span class="help-dot">?</span>
               </div>
 
+              <!-- Escenario visual de cámara, canvas de crop y mensaje inicial -->
               <div class="capture-stage">
                 <video id="livenessVideo" class="camera-video" autoplay playsinline muted></video>
                 <canvas id="livenessCropCanvas" class="crop-canvas" width="224" height="224"></canvas>
                 <div id="livenessIdleBox" class="idle-box">Presiona “Iniciar cámara” para comenzar.</div>
               </div>
 
+              <!-- Botones para iniciar o detener la cámara en el flujo de liveness -->
               <div class="camera-actions">
                 <button id="livenessStartBtn" class="md-button filled" type="button">Iniciar cámara</button>
                 <button id="livenessStopBtn" class="md-button tonal hidden" type="button">Detener cámara</button>
               </div>
             </section>
 
+            <!-- Acciones de verificación por imagen individual o secuencia de video -->
             <div id="livenessVerifyActions" class="primary-actions two-actions hidden">
               <button id="verifyImageBtn" class="md-button action-button" type="button">Verificar Liveness en Imagen</button>
               <button id="verifyVideoBtn" class="md-button action-button" type="button">Verificar Liveness en Video</button>
             </div>
           </div>
 
+          <!-- Bloque derecho: resultado JSON devuelto por el backend -->
           <aside class="right-flow">
             <section class="md-card result-card">
               <div class="card-title-row">
@@ -112,7 +138,10 @@
         </div>
       </section>
 
+      <!-- Vista secundaria para enrolamiento de identidad facial -->
       <section id="enrollmentView" class="view" aria-label="Enrolamiento">
+
+        <!-- Filtros del enrolamiento: modelo anti-spoofing y Person ID -->
         <div class="filter-row two-fields">
           <div class="field-control md-card compact-field">
             <label for="enrollModelSelect">Modelo anti-spoofing <span class="help-dot">?</span></label>
@@ -129,8 +158,13 @@
           </div>
         </div>
 
+        <!-- Distribución de captura y resultados para el flujo de enrolamiento -->
         <div class="workflow-grid">
+
+          <!-- Bloque izquierdo: cámara, crop facial y acción de registro -->
           <div class="left-flow">
+
+            <!-- Tarjeta de captura de cámara para enrolamiento -->
             <section id="enrollCaptureCard" class="md-card capture-card" data-state="idle">
               <div class="card-title-row">
                 <div>
@@ -140,23 +174,27 @@
                 <span class="help-dot">?</span>
               </div>
 
+              <!-- Escenario visual de cámara, canvas de crop y mensaje inicial -->
               <div class="capture-stage">
                 <video id="enrollVideo" class="camera-video" autoplay playsinline muted></video>
                 <canvas id="enrollCropCanvas" class="crop-canvas" width="224" height="224"></canvas>
                 <div id="enrollIdleBox" class="idle-box">Presiona “Iniciar cámara” para comenzar.</div>
               </div>
 
+              <!-- Botones para iniciar o detener la cámara en el flujo de enrolamiento -->
               <div class="camera-actions">
                 <button id="enrollStartBtn" class="md-button filled" type="button">Iniciar cámara</button>
                 <button id="enrollStopBtn" class="md-button tonal hidden" type="button">Detener cámara</button>
               </div>
             </section>
 
+            <!-- Acción principal para registrar identidad luego de capturar el rostro -->
             <div id="enrollActionGroup" class="primary-actions one-action hidden">
               <button id="registerIdentityBtn" class="md-button action-button" type="button">Registrar Identidad</button>
             </div>
           </div>
 
+          <!-- Bloque derecho: resultado JSON del enrolamiento devuelto por FastAPI -->
           <aside class="right-flow">
             <section class="md-card result-card">
               <div class="card-title-row">
@@ -174,6 +212,7 @@
     </main>
   </div>
 
+  <!-- Script principal que controla navegación, cámara, liveness y enrolamiento -->
   <script type="module" src="/frontend/src/main.js?v=md3-flow-responsive-20260612"></script>
 </body>
 </html>

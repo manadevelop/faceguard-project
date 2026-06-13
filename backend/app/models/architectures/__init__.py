@@ -3,6 +3,8 @@ from .efficientnet_b0 import EfficientNetB0Binary
 from .mobilenetv3_small import MobileNetV3SmallBinary
 from .cdcn import CDCN, CentralDifferenceConv2d, CDCBlock
 
+
+# Define las clases públicas disponibles al importar el módulo de arquitecturas.
 __all__ = [
     "CNNBaseline",
     "EfficientNetB0Binary",
