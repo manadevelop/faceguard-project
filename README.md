@@ -593,41 +593,7 @@ experiments/results/
 ```
 ---
 
-## 19. Flujo final recomendado
-
-```text
-1. Subir código limpio a GitHub.
-2. Entrenar en Colab con scripts/colab_train.sh.
-3. Descargar/copiar checkpoints RGB desde Google Drive.
-4. Colocar .pt en backend/app/models/weights/.
-5. Ejecutar backend FastAPI.
-6. Abrir /faceproguard.
-7. Probar modelos desde el selector del frontend.
-8. Documentar métricas y gráficos en el informe.
-```
-
----
-
-## 20. Estado del proyecto
-
-```text
-EDA                                      OK
-Procesamiento RGB                        OK
-Procesamiento Depth                      OK
-Entrenamiento CNN Baseline               OK
-Entrenamiento EfficientNet-B0            OK
-Entrenamiento MobileNetV3-Small          OK
-Entrenamiento CDCN                       OK
-Consolidación de métricas                OK
-Generación de gráficos                   OK
-Backend FastAPI con inferencia .pt        OK
-Frontend web con selector de modelos      OK
-Demo local en /faceproguard              OK
-```
-
----
-
-## 21. Conclusión
+## 19. Conclusión
 
 FaceGuard implementa un flujo completo de detección de vida anti-spoofing: preparación de datasets, EDA, entrenamiento de cuatro arquitecturas, comparación biométrica, generación de gráficos, integración de checkpoints `.pt` y prueba desde un cliente web local.
 
