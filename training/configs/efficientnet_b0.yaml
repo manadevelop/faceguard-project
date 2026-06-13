@@ -1,16 +1,43 @@
+# Configuración del modelo EfficientNet-B0.
 model:
+  # Nombre interno del modelo a entrenar.
   name: efficientnet_b0
+
+  # Tamaño de entrada esperado por la arquitectura.
   input_size: 224
+
+  # Número de salidas del clasificador binario.
   num_classes: 1
+
+# Configuración general del entrenamiento.
 training:
+  # Número máximo de épocas de entrenamiento.
   epochs: 30
+
+  # Cantidad de imágenes procesadas por batch.
   batch_size: 32
+
+  # Optimizador usado para actualizar los pesos del modelo.
   optimizer: adamw
+
+  # Tasa de aprendizaje inicial.
   learning_rate: 0.0001
+
+  # Regularización aplicada sobre los pesos del modelo.
   weight_decay: 0.00001
+
+# Configuración de la función de pérdida.
 loss:
+  # Nombre de la función de pérdida usada para clasificación binaria.
   name: binary_focal_loss
+
+# Rutas de los archivos CSV con la metadata del dataset.
 data:
+  # Archivo CSV con las muestras de entrenamiento.
   train_csv: training/data/metadata/train.csv
+
+  # Archivo CSV con las muestras de validación.
   val_csv: training/data/metadata/val.csv
+
+  # Archivo CSV con las muestras de prueba.
   test_csv: training/data/metadata/test.csv

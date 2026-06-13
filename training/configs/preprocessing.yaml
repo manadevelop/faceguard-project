@@ -1,3 +1,8 @@
+# Tamaño final al que se redimensionan las imágenes antes de procesarlas.
 resize: 224
+
+# Tipo de normalización aplicada a las imágenes.
 normalization: imagenet
+
+# Calidad JPEG usada al guardar imágenes procesadas.
 jpeg_quality: 82

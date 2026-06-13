@@ -20,7 +20,6 @@ Entrenar todos RGB + depth:
     python training/scripts/08_train_all_models.py --models all --modality all --epochs 12 --batch-size 32
 """
 
-# Importaciones base y librerías de entrenamiento/evaluación.
 from __future__ import annotations
 
 import argparse
@@ -61,21 +60,28 @@ from tqdm import tqdm
 
 # ============================================================
 # PATHS
+# Rutas centrales del proyecto, datasets procesados, salidas y modelos soportados.
 # ============================================================
 
+# Ubica la raíz del proyecto a partir de la ruta del script actual.
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+# Agrupa las rutas principales del módulo de entrenamiento y sus datos.
 TRAINING_DIR = PROJECT_ROOT / "training"
 DATA_DIR = TRAINING_DIR / "data"
 
+# Define las carpetas de entrada para datasets RGB y depth ya procesados.
 PROCESSED_RGB_DIR = DATA_DIR / "processed"
 PROCESSED_DEPTH_DIR = DATA_DIR / "processed_depth"
 
+# Define las carpetas donde se guardan checkpoints, logs, figuras y reportes.
 OUTPUTS_DIR = TRAINING_DIR / "outputs"
 CHECKPOINTS_DIR = OUTPUTS_DIR / "checkpoints"
 LOGS_DIR = OUTPUTS_DIR / "logs"
 FIGURES_DIR = OUTPUTS_DIR / "figures"
 REPORTS_DIR = OUTPUTS_DIR / "reports"
 
+# Lista oficial de arquitecturas que puede entrenar este script.
 MODEL_NAMES = ["cnn_baseline", "efficientnet_b0", "mobilenetv3_small", "cdcn"]
 
 

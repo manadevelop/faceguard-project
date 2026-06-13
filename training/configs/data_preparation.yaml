@@ -1,3 +1,8 @@
+# Tamaño estándar al que se redimensionan las imágenes antes del entrenamiento.
 input_size: 224
+
+# Etiqueta numérica usada para imágenes reales o vivas.
 label_live: 1
+
+# Etiqueta numérica usada para imágenes falsas o spoof.
 label_spoof: 0
