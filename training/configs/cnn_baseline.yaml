@@ -1,16 +1,25 @@
+# ============================================================
+# Configuración de entrenamiento: CNN Baseline
+# Red convolucional construida desde cero (sin transfer learning).
+# Sirve como línea base para comparar con EfficientNet, MobileNet y CDCN.
+# ============================================================
+
 model:
-  name: cnn_baseline
-  input_size: 224
-  num_classes: 1
+  name: cnn_baseline    # Identificador usado por build_model() para instanciar CNNBaseline
+  input_size: 224       # Resolución de entrada: 224×224 px (cada bloque Conv+MaxPool reduce a la mitad)
+  num_classes: 1        # Salida escalar: 1 logit → sigmoid → P(REAL). Clasificación binaria REAL/SPOOF
+
 training:
-  epochs: 30
-  batch_size: 32
-  optimizer: adamw
-  learning_rate: 0.0001
-  weight_decay: 0.00001
+  epochs: 30            # Épocas máximas; el early stopping (patience=5) puede cortar antes
+  batch_size: 32        # Mini-batch de 32 imágenes; balance entre velocidad y estabilidad del gradiente
+  optimizer: adamw      # AdamW = Adam con weight decay desacoplado; mejor regularización que Adam puro
+  learning_rate: 0.0001 # LR inicial (1e-4); ReduceLROnPlateau lo divide por 2 si el ACER no mejora
+  weight_decay: 0.00001 # Factor de regularización L2 (1e-5); penaliza pesos muy grandes
+
 loss:
-  name: binary_focal_loss
+  name: binary_focal_loss  # Variante de BCE que pondera más los ejemplos difíciles de clasificar
+
 data:
-  train_csv: training/data/metadata/train.csv
-  val_csv: training/data/metadata/val.csv
-  test_csv: training/data/metadata/test.csv
+  train_csv: training/data/metadata/train.csv  # Split de entrenamiento (con augmentation)
+  val_csv:   training/data/metadata/val.csv    # Split de validación (solo resize+normalize; guía early stopping)
+  test_csv:  training/data/metadata/test.csv   # Split de test (evaluación final con el mejor checkpoint)

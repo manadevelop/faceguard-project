@@ -87,20 +87,20 @@ MODEL_NAMES = ["cnn_baseline", "efficientnet_b0", "mobilenetv3_small", "cdcn"]
 # Dataclass usado para transportar de forma ordenada todos los hiperparámetros.
 @dataclass
 class TrainConfig:
-    model_name: str
-    modality: str
-    data_dir: str
-    image_size: int = 224
-    epochs: int = 12
-    batch_size: int = 32
-    learning_rate: float = 1e-4
-    weight_decay: float = 1e-5
-    num_workers: int = 2
-    seed: int = 42
-    patience: int = 5
-    pretrained: bool = True
-    use_weighted_sampler: bool = True
-    use_amp: bool = True
+    model_name: str            # 'cnn_baseline' | 'efficientnet_b0' | 'mobilenetv3_small' | 'cdcn'
+    modality: str              # 'rgb' | 'depth' — determina qué carpeta processed/ se usa
+    data_dir: str              # Ruta absoluta a la carpeta con subcarpetas train/val/test
+    image_size: int = 224      # Resolución cuadrada de entrada en píxeles
+    epochs: int = 12           # Épocas máximas; early stopping puede detenerse antes
+    batch_size: int = 32       # Imágenes por mini-batch
+    learning_rate: float = 1e-4    # LR inicial para AdamW
+    weight_decay: float = 1e-5     # Regularización L2 desacoplada (AdamW)
+    num_workers: int = 2       # Workers paralelos del DataLoader para cargar imágenes
+    seed: int = 42             # Semilla global; garantiza reproducibilidad entre runs
+    patience: int = 5          # Épocas sin mejora de ACER_val antes de early stopping
+    pretrained: bool = True    # Solo aplica a EfficientNet/MobileNet; ignorado en CNN Baseline
+    use_weighted_sampler: bool = True  # Balancea clases desiguales (live vs spoof) en cada batch
+    use_amp: bool = True       # Mixed Precision (float16 forward + float32 backward) en CUDA
 
 
 # Crea las carpetas de salida necesarias antes de guardar logs, figuras y checkpoints.
@@ -209,34 +209,53 @@ class FaceGuardImageDataset(Dataset):
 
 # Define transformaciones: con augmentation para train y deterministas para val/test.
 def get_transforms(image_size: int, train: bool) -> transforms.Compose:
+    """
+    Devuelve el pipeline de transformaciones según el modo.
+
+    Entrenamiento: incluye augmentation para diversificar los datos y evitar overfitting.
+    Validación/Test: solo redimensiona y normaliza (sin aleatoriedad, para evaluación consistente).
+    """
     if train:
-        # En entrenamiento se aplica data augmentation para mejorar generalización.
         return transforms.Compose(
             [
+                # Redimensiona a 224×224; necesario porque las imágenes del dataset tienen tamaños variados
                 transforms.Resize((image_size, image_size)),
+
+                # Volteo horizontal aleatorio: una cara real de perfil izquierdo ≈ perfil derecho
                 transforms.RandomHorizontalFlip(p=0.5),
+
+                # Variaciones de color (55% de probabilidad): simula distintas iluminaciones y cámaras
                 transforms.RandomApply(
                     [
                         transforms.ColorJitter(
-                            brightness=0.20,
-                            contrast=0.20,
-                            saturation=0.15,
-                            hue=0.03,
+                            brightness=0.20,   # ±20% de brillo
+                            contrast=0.20,     # ±20% de contraste
+                            saturation=0.15,   # ±15% de saturación
+                            hue=0.03,          # ±3% de tono (sutil, evita colores irreales)
                         )
                     ],
                     p=0.55,
                 ),
+
+                # Desenfoque gaussiano leve (20% de probabilidad): simula cámaras fuera de foco
                 transforms.RandomApply(
                     [
                         transforms.GaussianBlur(
                             kernel_size=3,
-                            sigma=(0.1, 1.5),
+                            sigma=(0.1, 1.5),  # sigma pequeño para no destruir texturas de piel
                         )
                     ],
                     p=0.20,
                 ),
+
+                # Rotación aleatoria de hasta ±8°: invariancia a inclinaciones leves de cabeza
                 transforms.RandomRotation(degrees=8),
+
+                # Convierte PIL Image a tensor float32 en rango [0, 1] con forma [C, H, W]
                 transforms.ToTensor(),
+
+                # Normalización con media y std de ImageNet; escala los valores a ~[-2, 2]
+                # Se usa aunque la CNN Baseline no use pesos de ImageNet: estabiliza el entrenamiento
                 transforms.Normalize(
                     mean=[0.485, 0.456, 0.406],
                     std=[0.229, 0.224, 0.225],
@@ -282,29 +301,36 @@ def build_dataloaders(cfg: TrainConfig):
     # Se extraen etiquetas del train set para contar clases y construir pesos.
     train_labels = [label for _, label in train_ds.samples]
 
+    # Cuenta cuántas imágenes hay por clase: {0: n_spoof, 1: n_live}
     class_counts = {
         0: int(sum(1 for y in train_labels if y == 0)),
         1: int(sum(1 for y in train_labels if y == 1)),
     }
 
     sampler = None
-    shuffle = True
+    shuffle = True  # shuffle normal si no se usa WeightedRandomSampler
 
-    # El sampler ponderado evita que la clase mayoritaria domine los batches.
     if cfg.use_weighted_sampler:
+        # Peso por clase = 1 / cantidad; las clases pequeñas reciben peso mayor
+        # Ejemplo: 1000 live → peso 0.001 | 300 spoof → peso 0.0033
+        # Esto hace que el sampler elija spoof con más frecuencia para balancear los batches
         weights_per_class = {
             cls: 1.0 / max(count, 1)
             for cls, count in class_counts.items()
         }
 
+        # Asigna el peso de su clase a cada muestra individual
         sample_weights = [weights_per_class[y] for y in train_labels]
 
+        # WeightedRandomSampler: muestrea con reemplazo según los pesos calculados
+        # Resultado: cada batch tiene aproximadamente 50% live / 50% spoof sin importar el desbalance real
         sampler = WeightedRandomSampler(
             weights=torch.DoubleTensor(sample_weights),
             num_samples=len(sample_weights),
-            replacement=True,
+            replacement=True,  # permite repetir imágenes para compensar la clase minoritaria
         )
 
+        # shuffle=False porque el sampler ya se encarga del orden aleatorio balanceado
         shuffle = False
 
     train_loader = DataLoader(
@@ -342,48 +368,97 @@ def build_dataloaders(cfg: TrainConfig):
 
 # CNN propia usada como línea base entrenada desde cero.
 class CNNBaseline(nn.Module):
+    """
+    Red convolucional construida desde cero para clasificación binaria REAL/SPOOF.
+
+    Arquitectura: 5 bloques convolucionales (extracción de características)
+                  + 1 clasificador fully-connected (decisión final).
+
+    Flujo de dimensiones con entrada [B, 3, 224, 224]:
+        Bloque 1 → [B, 32,  112, 112]
+        Bloque 2 → [B, 64,   56,  56]
+        Bloque 3 → [B, 128,  28,  28]
+        Bloque 4 → [B, 256,  14,  14]
+        Bloque 5 → [B, 384,   7,   7]
+        AvgPool  → [B, 384,   1,   1] → Flatten → [B, 384]
+        Linear   → [B, 128] → Linear → [B, 1]  → squeeze → [B]
+
+    No usa pesos preentrenados: aprende todo desde cero con los datos de FaceGuard.
+    """
+
     def __init__(self):
         super().__init__()
 
+        # ── Parte extractora de características ──────────────────────────────
+        # Cada bloque: Conv → BatchNorm → ReLU → MaxPool(2)
+        # Los canales se duplican aprox. en cada bloque mientras la resolución se reduce a la mitad.
+        # bias=False porque BatchNorm ya aprende su propio sesgo (parámetro β).
         self.features = nn.Sequential(
+            # Bloque 1: detecta bordes y gradientes de bajo nivel
+            # padding=1 mantiene resolución espacial antes del MaxPool
             nn.Conv2d(3, 32, kernel_size=3, padding=1, bias=False),
-            nn.BatchNorm2d(32),
+            nn.BatchNorm2d(32),   # normaliza activaciones dentro del batch → entrenamiento más estable
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2),
+            nn.MaxPool2d(2),      # 224 → 112
 
+            # Bloque 2: detecta texturas simples (puntos, líneas cortas)
             nn.Conv2d(32, 64, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2),
+            nn.MaxPool2d(2),      # 112 → 56
 
+            # Bloque 3: detecta patrones más complejos (texturas de piel, tramas de papel/pantalla)
             nn.Conv2d(64, 128, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2),
+            nn.MaxPool2d(2),      # 56 → 28
 
+            # Bloque 4: detecta características de alto nivel (regiones faciales, artefactos de impresión)
             nn.Conv2d(128, 256, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2),
+            nn.MaxPool2d(2),      # 28 → 14
 
+            # Bloque 5: integra contexto global (¿tiene la imagen los marcadores de un ataque?)
+            # Sin MaxPool al final: el AdaptiveAvgPool del clasificador maneja la reducción final
             nn.Conv2d(256, 384, kernel_size=3, padding=1, bias=False),
             nn.BatchNorm2d(384),
             nn.ReLU(inplace=True),
+            # Resolución aquí: 14 → 7 (sin pool explícito; AdaptiveAvgPool lo reducirá a 1×1)
         )
 
+        # ── Parte clasificadora ───────────────────────────────────────────────
         self.classifier = nn.Sequential(
+            # Reduce cualquier resolución espacial a 1×1: convierte [B, 384, 7, 7] → [B, 384, 1, 1]
             nn.AdaptiveAvgPool2d(1),
+
+            # Elimina las dimensiones espaciales: [B, 384, 1, 1] → [B, 384]
             nn.Flatten(),
+
+            # Dropout(0.35): apaga 35% de las neuronas al azar durante entrenamiento
+            # Fuerza a la red a no depender de ningún descriptor específico → reduce overfitting
             nn.Dropout(0.35),
+
+            # Proyecta el vector de 384 dims a 128; aprende combinaciones de características
             nn.Linear(384, 128),
             nn.ReLU(inplace=True),
+
+            # Dropout más leve cerca de la salida para no perder demasiada capacidad
             nn.Dropout(0.25),
+
+            # Capa de salida: produce 1 logit escalar (sin Sigmoid aquí)
+            # La Sigmoid se aplica implícitamente dentro de BCEWithLogitsLoss durante el entrenamiento
+            # y explícitamente (sigmoid()) durante la inferencia para obtener probabilidad
             nn.Linear(128, 1),
         )
 
     def forward(self, x):
+        # Extrae características jerárquicas a través de los 5 bloques convolucionales
         x = self.features(x)
+        # Clasifica: pooling → flatten → dropout → linear → logit
         x = self.classifier(x)
+        # squeeze(1): elimina la dimensión de clase → [B, 1] → [B]
+        # BCEWithLogitsLoss espera un tensor 1D de logits, no 2D
         return x.squeeze(1)
 
 
@@ -637,8 +712,23 @@ def calculate_metrics(
 
     # APCER: ataques aceptados como live = FP / total spoof
     # BPCER: usuarios reales rechazados = FN / total live
+    # ── Métricas biométricas estándar ISO/IEC 30107-3 ────────────────────────
+    # APCER (Attack Presentation Classification Error Rate):
+    #   Fracción de ataques (spoof) que el modelo clasificó como cara real.
+    #   FP = spoofs aceptados. FP+TN = total de spoofs reales.
+    #   APCER bajo → el sistema rechaza bien los ataques.
     apcer = fp / max(fp + tn, 1)
+
+    # BPCER (Bona Fide Presentation Classification Error Rate):
+    #   Fracción de caras reales que el modelo rechazó como spoof.
+    #   FN = reales rechazados. FN+TP = total de caras reales.
+    #   BPCER bajo → el sistema no bloquea a usuarios legítimos.
     bpcer = fn / max(fn + tp, 1)
+
+    # ACER (Average Classification Error Rate):
+    #   Promedio de los dos errores. Es la métrica principal del proyecto.
+    #   Se minimiza durante la búsqueda del umbral óptimo.
+    #   ACER = 0 → sistema perfecto. ACER = 0.5 → equivalente a adivinar al azar.
     acer = (apcer + bpcer) / 2.0
 
     return {
@@ -723,7 +813,15 @@ def train_one_epoch(
     scaler=None,
     use_amp: bool = True,
 ) -> float:
-    model.train()
+    """
+    Ejecuta una época completa de entrenamiento y devuelve la pérdida promedio.
+
+    Soporta Automatic Mixed Precision (AMP) en CUDA:
+    - forward + loss: float16 (más rápido, menos VRAM)
+    - backward (gradientes): float32 (más estable numéricamente)
+    El GradScaler escala la pérdida para evitar underflow de gradientes en float16.
+    """
+    model.train()  # Activa BatchNorm en modo entrenamiento y habilita Dropout
 
     losses = []
 
@@ -731,21 +829,24 @@ def train_one_epoch(
         x = x.to(device)
         y = y.to(device)
 
+        # set_to_none=True libera memoria de los gradientes anteriores (más eficiente que zero_grad)
         optimizer.zero_grad(set_to_none=True)
 
         if scaler is not None and use_amp and device.type == "cuda":
+            # ── Rama AMP (GPU) ────────────────────────────────────────────────
             with torch.cuda.amp.autocast():
-                logits = model(x)
-                loss = criterion(logits, y)
+                logits = model(x)          # forward en float16
+                loss = criterion(logits, y) # BCEWithLogitsLoss en float16
 
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
+            scaler.scale(loss).backward()  # escala la pérdida antes del backward para evitar underflow
+            scaler.step(optimizer)         # desescala los gradientes y actualiza pesos
+            scaler.update()                # ajusta el factor de escala para la siguiente iteración
         else:
+            # ── Rama estándar (CPU / MPS) ─────────────────────────────────────
             logits = model(x)
             loss = criterion(logits, y)
-            loss.backward()
-            optimizer.step()
+            loss.backward()    # calcula gradientes ∂L/∂w para todos los parámetros
+            optimizer.step()   # actualiza pesos: w = w - lr * gradiente_adaptado (AdamW)
 
         losses.append(float(loss.detach().cpu().item()))
 
@@ -863,23 +964,31 @@ def train_model(cfg: TrainConfig) -> Dict:
     # Construye el modelo solicitado y lo mueve al dispositivo seleccionado.
     model = build_model(cfg.model_name, pretrained=cfg.pretrained).to(device)
 
+    # ── Función de pérdida con peso de clase positiva ─────────────────────────
     num_spoof = class_counts.get(0, 1)
-    num_live = class_counts.get(1, 1)
+    num_live  = class_counts.get(1, 1)
+    # pos_weight pondera más la pérdida de la clase positiva (live=1) cuando hay más spoof que live
+    # Ejemplo: 1000 spoof, 300 live → pos_weight = 3.33 → la pérdida de un live mal clasificado
+    # vale 3.33× más que la de un spoof mal clasificado
     pos_weight_value = num_spoof / max(num_live, 1)
-
     pos_weight = torch.tensor([pos_weight_value], dtype=torch.float32).to(device)
 
-    # Loss binaria con peso positivo para compensar desbalance LIVE/SPOOF.
+    # BCEWithLogitsLoss = Sigmoid + Binary Cross-Entropy, numéricamente más estable que separarlos
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
-    # AdamW permite fine-tuning estable y regularización por weight decay.
+    # ── Optimizador AdamW ─────────────────────────────────────────────────────
+    # AdamW = Adam con weight decay desacoplado: w = w - lr*(m̂/(√v̂+ε)) - lr*λ*w
+    # Mejora la regularización respecto a Adam estándar (que acopla weight decay al gradiente)
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=cfg.learning_rate,
-        weight_decay=cfg.weight_decay,
+        lr=cfg.learning_rate,      # 1e-4 inicial
+        weight_decay=cfg.weight_decay,  # λ=1e-5 (penaliza pesos grandes)
     )
 
-    # Reduce el learning rate cuando ACER de validación deja de mejorar.
+    # ── Scheduler: reduce LR si el ACER de validación no mejora ──────────────
+    # mode='min': monitorea una métrica que queremos minimizar (ACER)
+    # patience=2: espera 2 épocas sin mejora antes de reducir
+    # factor=0.5: lr_nuevo = lr_actual * 0.5
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer,
         mode="min",
@@ -887,6 +996,8 @@ def train_model(cfg: TrainConfig) -> Dict:
         factor=0.5,
     )
 
+    # GradScaler para AMP: escala la pérdida para evitar underflow de gradientes en float16
+    # Solo se activa en GPU CUDA; en CPU/MPS no hay beneficio de AMP
     scaler = torch.cuda.amp.GradScaler() if device.type == "cuda" and cfg.use_amp else None
 
     model_dir = CHECKPOINTS_DIR / cfg.model_name

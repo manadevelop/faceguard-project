@@ -32,15 +32,21 @@ def run_single_model(model_name: str) -> None:
     """
     parser = argparse.ArgumentParser()
 
-    # Parámetros de datos y entrenamiento que serán reenviados al script principal.
+    # Modalidad de imagen: RGB (canal visible) o depth (mapa de profundidad)
     parser.add_argument('--modality', default='rgb', choices=['rgb', 'depth', 'all'])
+
+    # Hiperparámetros de entrenamiento
     parser.add_argument('--epochs', type=int, default=12)
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--image-size', type=int, default=224)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--weight-decay', type=float, default=1e-5)
     parser.add_argument('--num-workers', type=int, default=2)
+
+    # Semilla para reproducibilidad (afecta shuffling, dropout, inicialización)
     parser.add_argument('--seed', type=int, default=42)
+
+    # Early stopping: detener si ACER de validación no mejora en N épocas
     parser.add_argument('--patience', type=int, default=5)
 
     # Flags opcionales para desactivar transferencia de aprendizaje, sampler o AMP.
